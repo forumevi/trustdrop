@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useWriteContract, useWaitForTransactionReceipt, useAccount, useReadContract } from 'wagmi';
+import { useWriteContract, useWaitForTransactionReceipt, useAccount, useReadContract, useWalletClient, usePublicClient } from 'wagmi';
 import { parseUnits } from 'viem';
-import { PlusCircle, Trash2, Info } from 'lucide-react';
+import { PlusCircle, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { TRUSTDROP_ABI, TRUSTDROP_ADDRESS, USDC_ABI, USDC_ADDRESS } from '@/lib/trustdrop';
 
@@ -53,26 +53,47 @@ export function CreateVaultForm({ onCreated }: Props) {
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([{ address: '', share: '100' }]);
   const [step, setStep] = useState<'idle' | 'approving' | 'creating'>('idle');
 
-  const { data: allowance, refetch: refetchAllowance } = useReadContract({
+  const { data: allowance } = useReadContract({
     address: USDC_ADDRESS,
     abi: USDC_ABI,
     functionName: 'allowance',
     args: [address ?? '0x0000000000000000000000000000000000000000', TRUSTDROP_ADDRESS],
   });
 
-  const { writeContract, data: txHash, isPending } = useWriteContract();
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash: txHash });
+  const { data: walletClient } = useWalletClient();
+  const publicClient = usePublicClient();
+  const { writeContract: writeCreate, data: createTxHash, isPending: isCreatePending } = useWriteContract();
+  const { isSuccess: createSuccess } = useWaitForTransactionReceipt({ hash: createTxHash });
+  const [isApproving, setIsApproving] = useState(false);
+  const isPending = isCreatePending || isApproving;
 
+  // After create confirms, show success
   useEffect(() => {
-    if (!isSuccess) return;
-    setStep(prev => {
-      if (prev === 'approving') { void refetchAllowance(); return 'creating'; }
-      if (prev === 'creating')  { toast.success('Vault created.'); onCreated(); return 'idle'; }
-      return prev;
-    });
-  // onCreated and refetchAllowance are stable
+    if (!createSuccess) return;
+    toast.success('Vault created.');
+    onCreated();
+    setStep('idle');
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccess]);
+  }, [createSuccess]);
+
+  function fireCreate() {
+    setStep('creating');
+    writeCreate(
+      {
+        address: TRUSTDROP_ADDRESS,
+        abi: TRUSTDROP_ABI,
+        functionName: 'createVault',
+        args: [
+          pqKey as `0x${string}`,
+          BigInt(interval),
+          BigInt(grace),
+          beneficiaries.map((b) => b.address as `0x${string}`),
+          beneficiaries.map((b) => BigInt(Math.round((parseFloat(b.share) || 0) * 100))),
+        ],
+      },
+      { onError: (e) => { setStep('idle'); toast.error(e.message.slice(0, 80)); } }
+    );
+  }
 
   function totalShares() {
     return beneficiaries.reduce((s, b) => s + (parseFloat(b.share) || 0), 0);
@@ -98,39 +119,40 @@ export function CreateVaultForm({ onCreated }: Props) {
     setBeneficiaries(beneficiaries.map((b, idx) => (idx === i ? { ...b, [field]: value } : b)));
   }
 
-  function handleSubmit() {
-    if (!address || !isValid()) return;
+  async function handleSubmit() {
+    if (!address || !isValid() || !walletClient || !publicClient) return;
     const amountWei = parseUnits(amount, 6);
-    const needsApproval = !allowance || (allowance) < amountWei;
+    const needsApproval = !allowance || allowance < amountWei;
 
     if (needsApproval) {
-      setStep('approving');
-      writeContract(
-        { address: USDC_ADDRESS, abi: USDC_ABI, functionName: 'approve', args: [TRUSTDROP_ADDRESS, amountWei] },
-        { onError: (e) => { setStep('idle'); toast.error(e.message.slice(0, 80)); } }
-      );
-      return;
+      try {
+        setStep('approving');
+        setIsApproving(true);
+        const approveTx = await walletClient.writeContract({
+          address: USDC_ADDRESS,
+          abi: USDC_ABI,
+          functionName: 'approve',
+          args: [TRUSTDROP_ADDRESS, amountWei],
+        });
+        // Arc is sub-second — poll receipt with a short timeout instead of waiting indefinitely
+        try {
+          await publicClient.waitForTransactionReceipt({ hash: approveTx, timeout: 15_000 });
+        } catch {
+          // timeout is fine — Arc finalizes in <1s, MetaMask just doesn't hear back quickly
+        }
+        setIsApproving(false);
+      } catch (e: unknown) {
+        setIsApproving(false);
+        setStep('idle');
+        toast.error(e instanceof Error ? e.message.slice(0, 80) : 'Approve failed');
+        return;
+      }
     }
 
-    setStep('creating');
-    writeContract(
-      {
-        address: TRUSTDROP_ADDRESS,
-        abi: TRUSTDROP_ABI,
-        functionName: 'createVault',
-        args: [
-          pqKey as `0x${string}`,
-          BigInt(interval),
-          BigInt(grace),
-          beneficiaries.map((b) => b.address as `0x${string}`),
-          beneficiaries.map((b) => BigInt(Math.round((parseFloat(b.share) / 100) * 10000))),
-        ],
-      },
-      { onError: (e) => { setStep('idle'); toast.error(e.message.slice(0, 80)); } }
-    );
+    fireCreate();
   }
 
-  const busy = isPending || isConfirming;
+  const busy = isPending;
   const sharesOk = totalShares() === 100;
 
   return (
@@ -138,7 +160,30 @@ export function CreateVaultForm({ onCreated }: Props) {
 
       {/* PQ Key */}
       <div>
-        <label style={labelStyle} className="block mb-2">Post-Quantum Public Key (SLH-DSA)</label>
+        <div className="flex items-center justify-between mb-2">
+          <label style={labelStyle}>Post-Quantum Public Key (SLH-DSA)</label>
+          <button
+            type="button"
+            onClick={() => {
+              const bytes = crypto.getRandomValues(new Uint8Array(32));
+              const hex = '0x' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+              setPqKey(hex);
+            }}
+            style={{
+              fontSize: '0.68rem',
+              color: 'var(--accent)',
+              background: 'rgba(132,184,232,0.08)',
+              border: '1px solid rgba(132,184,232,0.2)',
+              borderRadius: '6px',
+              padding: '3px 10px',
+              cursor: 'pointer',
+              letterSpacing: '0.04em',
+              fontWeight: 600,
+            }}
+          >
+            Generate demo key
+          </button>
+        </div>
         <input
           value={pqKey}
           onChange={(e) => setPqKey(e.target.value)}
@@ -148,10 +193,9 @@ export function CreateVaultForm({ onCreated }: Props) {
           onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
           onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
         />
-        <p className="mt-1.5 flex items-center gap-1 text-xs" style={{ color: 'var(--subtle)', opacity: 0.7 }}>
-          <Info size={10} />
-          Generate with the SLH-DSA key tool. Keep your private key offline.
-        </p>
+        <div className="mt-2 p-3 rounded-xl text-xs" style={{ background: 'rgba(132,184,232,0.05)', border: '1px solid rgba(132,184,232,0.12)', color: 'var(--subtle)', lineHeight: 1.6 }}>
+          <span style={{ color: 'var(--accent)', fontWeight: 600 }}>What is this?</span> Your EVM wallet can be stolen or hacked. SLH-DSA is a post-quantum key that lives offline, on a USB or paper. Only someone with that physical key can prove you are alive. Click <span style={{ color: 'var(--accent)' }}>Generate demo key</span> to try the flow with a random key, or use a real SLH-DSA tool for production.
+        </div>
       </div>
 
       {/* Amount */}
@@ -299,7 +343,7 @@ export function CreateVaultForm({ onCreated }: Props) {
 
       {/* Submit */}
       <button
-        onClick={handleSubmit}
+        onClick={() => { void handleSubmit(); }}
         disabled={busy || !isValid() || !address}
         className="w-full py-4 rounded-xl font-bold text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
         style={{

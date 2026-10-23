@@ -155,17 +155,13 @@ export default function App() {
 
           {/* Logo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{
-              width: 42, height: 42, borderRadius: 12,
-              background: 'linear-gradient(135deg, rgba(132,184,232,0.20) 0%, rgba(60,120,220,0.12) 100%)',
-              border: '1px solid rgba(132,184,232,0.25)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0,
-            }}>
-              <Shield size={22} style={{ color: 'var(--accent)' }} />
-            </div>
+            <img
+              src="/trustdrop-logo.svg"
+              alt="TrustDrop"
+              style={{ width: 52, height: 52, flexShrink: 0 }}
+            />
             <div>
-              <div className="display" style={{ fontWeight: 700, fontSize: '1.35rem', letterSpacing: '-0.035em', lineHeight: 1 }}>TrustDrop</div>
+              <div className="display" style={{ fontWeight: 800, fontSize: '1.7rem', letterSpacing: '-0.04em', lineHeight: 1 }}>TrustDrop</div>
               <div style={{ fontSize: '0.62rem', color: 'var(--subtle)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 3 }}>USDC Inheritance Vault</div>
             </div>
           </div>

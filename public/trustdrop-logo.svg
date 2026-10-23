@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a2744;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0d1829;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="shield" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#84b8e8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3c78dc;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="drop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4ade80;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#22c55e;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="100" fill="url(#bg)"/>
+
+  <!-- Subtle border -->
+  <circle cx="100" cy="100" r="97" fill="none" stroke="rgba(132,184,232,0.2)" stroke-width="1"/>
+
+  <!-- Shield body -->
+  <path d="M100 32 L148 52 L148 96 C148 126 126 150 100 162 C74 150 52 126 52 96 L52 52 Z"
+        fill="url(#shield)" opacity="0.15"/>
+  <path d="M100 38 L143 56 L143 96 C143 123 123 145 100 156 C77 145 57 123 57 96 L57 56 Z"
+        fill="none" stroke="url(#shield)" stroke-width="2.5" filter="url(#glow)"/>
+
+  <!-- Inner shield highlight -->
+  <path d="M100 50 L135 65 L135 96 C135 117 118 135 100 144 C82 135 65 117 65 96 L65 65 Z"
+        fill="rgba(132,184,232,0.06)"/>
+
+  <!-- USDC dollar symbol inside shield -->
+  <text x="100" y="108" text-anchor="middle" font-family="Georgia, serif"
+        font-size="38" font-weight="700" fill="url(#shield)" opacity="0.9">$</text>
+
+  <!-- Green drop / pulse dot (proof of life indicator) -->
+  <circle cx="138" cy="68" r="10" fill="url(#drop)" filter="url(#glow)"/>
+  <circle cx="138" cy="68" r="6" fill="#4ade80"/>
+  <circle cx="138" cy="68" r="3" fill="white" opacity="0.9"/>
+
+  <!-- Pulse ring -->
+  <circle cx="138" cy="68" r="14" fill="none" stroke="#4ade80" stroke-width="1.5" opacity="0.4"/>
+
+</svg>
