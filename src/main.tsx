@@ -70,7 +70,28 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <ConnectKitProvider>
+        <ConnectKitProvider
+          customTheme={{
+            "--ck-font-family": "'DM Sans', sans-serif",
+            "--ck-border-radius": "14px",
+            "--ck-connectbutton-font-size": "0.82rem",
+            "--ck-connectbutton-font-weight": "600",
+            "--ck-connectbutton-color": "#acc6e9",
+            "--ck-connectbutton-background": "rgba(172,198,233,0.08)",
+            "--ck-connectbutton-border-radius": "10px",
+            "--ck-connectbutton-box-shadow": "none",
+            "--ck-connectbutton-hover-color": "#f0f4fa",
+            "--ck-connectbutton-hover-background": "rgba(172,198,233,0.14)",
+            "--ck-connectbutton-active-background": "rgba(172,198,233,0.18)",
+            "--ck-primary-button-color": "#080c12",
+            "--ck-primary-button-background": "#acc6e9",
+            "--ck-primary-button-hover-background": "#c4d9f5",
+            "--ck-body-background": "#0d1b2f",
+            "--ck-body-color": "#f0f4fa",
+            "--ck-body-color-muted": "#94a3b8",
+            "--ck-overlay-background": "rgba(0,0,0,0.7)",
+          }}
+        >
           <App />
           <StudioWatermark />
           <Toaster position="top-center" />

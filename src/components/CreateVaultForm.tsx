@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useWriteContract, useWaitForTransactionReceipt, useAccount, useReadContract } from 'wagmi';
 import { parseUnits } from 'viem';
 import { PlusCircle, Trash2, Info } from 'lucide-react';
@@ -63,15 +63,16 @@ export function CreateVaultForm({ onCreated }: Props) {
   const { writeContract, data: txHash, isPending } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash: txHash });
 
-  if (isSuccess && step === 'approving') {
-    setStep('creating');
-    void refetchAllowance();
-  }
-  if (isSuccess && step === 'creating') {
-    setStep('idle');
-    toast.success('Vault created.');
-    onCreated();
-  }
+  useEffect(() => {
+    if (!isSuccess) return;
+    setStep(prev => {
+      if (prev === 'approving') { void refetchAllowance(); return 'creating'; }
+      if (prev === 'creating')  { toast.success('Vault created.'); onCreated(); return 'idle'; }
+      return prev;
+    });
+  // onCreated and refetchAllowance are stable
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess]);
 
   function totalShares() {
     return beneficiaries.reduce((s, b) => s + (parseFloat(b.share) || 0), 0);
