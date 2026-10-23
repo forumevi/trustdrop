@@ -213,3 +213,21 @@
 {"level":"warn","message":"(previous line repeated 1× more)","timestamp":1792785577013}
 {"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792785577013,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
 {"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792785577013,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"debug","message":"[vite] connected.","timestamp":1792787722735}
+{"level":"debug","message":"[vite] connected.","timestamp":1792787722735}
+{"level":"warn","message":"Error restoring session i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787731266,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"(previous line repeated 1× more)","timestamp":1792787731268}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787731268,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787731268,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"Error restoring session i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787731266,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"(previous line repeated 1× more)","timestamp":1792787731268}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787731268,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787731268,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"debug","message":"[vite] connected.","timestamp":1792787745476}
+{"level":"debug","message":"[vite] connected.","timestamp":1792787745476}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792787749102}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792787749115}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792787749102}
+{"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792787749115}
+{"level":"debug","message":"[vite] connected.","timestamp":1792787752453}
+{"level":"debug","message":"[vite] connected.","timestamp":1792787753008}

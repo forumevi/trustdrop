@@ -1,41 +1,47 @@
 # TrustDrop
 
-**A USDC inheritance vault on Arc. If you stop checking in, your beneficiaries can claim.**
+**A USDC inheritance vault on Arc. Lock funds, check in to prove you're alive, and if you stop checking in your beneficiaries claim everything automatically.**
 
 Built with [Arc Studio](https://studio.arc.io)
 
-TrustDrop is a dead man's switch for USDC. You lock funds into a vault, set a check-in interval (weekly, monthly, yearly), and designate beneficiaries with percentage shares. As long as you check in regularly with a post-quantum SLH-DSA signature, the money stays yours. If you stop — because you can't, not because someone stole your wallet — your beneficiaries can claim after the grace window expires.
+---
 
-The SLH-DSA key is kept offline, separate from your EVM wallet. A stolen wallet key cannot fake a proof of life.
+## The problem
 
-## What makes it Arc-native
+Every crypto holder faces the same question: what happens to my USDC if I'm incapacitated or die? Hardware wallets get lost. Seed phrases sit in drawers. Exchange accounts get frozen. There is no reliable, trustless way to pass on USDC.
 
-- **USDC as gas**: the vault, deposits, payouts, and gas fees are all one asset. Beneficiaries with empty wallets can still claim.
-- **Sub-second finality**: claims settle in under a second, no pending state.
-- **SLH-DSA precompile**: Arc has a built-in post-quantum signature verifier at `0x1800000000000000000000000000000000000004`. TrustDrop uses it to verify every check-in and withdrawal on-chain.
+TrustDrop fixes this with a dead man's switch. You lock USDC in a vault and check in periodically — once a month, once a year, whatever you choose. As long as you check in, only you control the funds. If you stop checking in, your designated beneficiaries can claim everything after a grace period.
+
+The twist: check-ins require a **post-quantum SLH-DSA signature**, verified on-chain through Arc's built-in PQ precompile. Even if your EVM wallet is stolen, an attacker can't fake a check-in without the offline key card. The key that proves you're alive is separate from the key that moves money.
 
 ## How it works
 
-| Step | Who | What happens |
+| Step | Who | What |
 |---|---|---|
-| Create vault | Owner | Locks USDC, sets interval + grace window, names beneficiaries and shares |
-| Check in | Owner | Submits SLH-DSA signature every interval to prove they are alive |
-| Withdraw | Owner | Retrieves funds any time they are not lapsed, with SLH-DSA proof |
-| Claim | Anyone | After interval + grace window with no check-in, sends USDC to beneficiaries |
+| Create vault | Owner | Lock USDC, set check-in interval and grace window, name beneficiaries with shares |
+| Check in | Owner | Submit a post-quantum signature — proves you're alive, resets the clock |
+| Withdraw | Owner | Reclaim all funds any time (requires PQ signature) |
+| Claim | Anyone | Once the vault lapses, distribute USDC to beneficiaries by their share |
 
-## Contract
+## Why Arc
 
-- **Arc Testnet**: `0xbfba2549c088af4ec9bc088e6692b3068e661f2b`
-- Source: `contracts/TrustDrop.sol`
-- 67 Foundry tests: unit, fuzz, invariant, revert paths
-- No owner admin, no upgrade path, no pause function
+- **USDC as gas**: the vault, deposits, check-ins and payouts are all the same asset — no second token needed
+- **Sub-second finality**: a claim lands in under a second, not "pending for 10 minutes"
+- **SLH-DSA precompile**: Arc has a built-in post-quantum signature verifier at `0x1800...0004` — verifying a 7,856-byte SLH-DSA signature on-chain costs fractions of a cent
+
+## Live on Arc Mainnet
+
+- **Contract**: [`0x11526Cad05a63174392e7C7157929733eb5D8751`](https://explorer.arc.io/address/0x11526Cad05a63174392e7C7157929733eb5D8751)
+- **Deploy tx**: [`0x6cfd4c...`](https://explorer.arc.io/tx/0x6cfd4cfed7ac1aa7b151038f552540fd30235ada4c154d6cf34688ec69399076)
+- **Chain ID**: 5042
 
 ## Tech stack
 
-- Solidity 0.8.28, Foundry, OpenZeppelin
-- React + TypeScript + Vite, wagmi v2, ConnectKit
-- Arc mainnet (chain ID 5042), USDC at `0x3600000000000000000000000000000000000000`
-- SLH-DSA verifier precompile at `0x1800000000000000000000000000000000000004`
+- Solidity 0.8.28 + Foundry (67 tests: unit, fuzz, invariant)
+- React 18, Vite, TypeScript, Tailwind CSS
+- wagmi v2 + viem v2 + ConnectKit
+- Arc mainnet, USDC at `0x3600000000000000000000000000000000000000`
+- SLH-DSA precompile at `0x1800000000000000000000000000000000000004`
 
 ## Development
 
@@ -54,10 +60,9 @@ bun install
 
 | Variable | Purpose |
 |---|---|
-| `VITE_TRUSTDROP_ADDRESS` | Deployed TrustDrop contract address |
-| `RPC_PROXY_BASE_URL` | Optional — Arc Studio RPC proxy base URL (set automatically in Arc Studio) |
-| `RPC_PROXY_TOKEN` | Optional — Arc Studio RPC proxy token (set automatically in Arc Studio) |
-| `RPC_PROXY_CHAINS` | Optional — chains available via the proxy (set automatically in Arc Studio) |
+| `VITE_TRUSTDROP_ADDRESS` | TrustDrop contract address on Arc mainnet |
+| `RPC_PROXY_BASE_URL` | RPC proxy base URL (optional outside Arc Studio) |
+| `RPC_PROXY_TOKEN` | RPC proxy token (optional outside Arc Studio) |
 
 ### Run
 
@@ -68,7 +73,7 @@ bun run dev
 ### Test contracts
 
 ```bash
-forge test
+bun run contracts:test
 ```
 
 ### Build
@@ -76,16 +81,3 @@ forge test
 ```bash
 bun run build
 ```
-
-### Deploy to Arc mainnet
-
-```bash
-export PRIVATE_KEY=<your_private_key>
-
-forge create contracts/TrustDrop.sol:TrustDrop \
-  --rpc-url https://rpc.mainnet.arc.io \
-  --private-key $PRIVATE_KEY \
-  --broadcast
-```
-
-After deploy, set `VITE_TRUSTDROP_ADDRESS` to the deployed address and update `src/config.ts` to use the Arc mainnet chain.
