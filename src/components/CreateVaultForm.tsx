@@ -7,7 +7,7 @@ import { TRUSTDROP_ABI, TRUSTDROP_ADDRESS, USDC_ABI, USDC_ADDRESS } from '@/lib/
 
 interface Beneficiary {
   address: string;
-  share: string; // percent string, e.g. "50"
+  share: string;
 }
 
 interface Props {
@@ -27,6 +27,23 @@ const GRACE_OPTIONS = [
   { label: '14 days', value: 14 * 86400 },
 ];
 
+const inputStyle = {
+  background: 'var(--surface-muted)',
+  border: '1px solid var(--border)',
+  color: 'var(--ink)',
+  borderRadius: '12px',
+  outline: 'none',
+  transition: 'border-color 0.15s',
+};
+
+const labelStyle = {
+  color: 'var(--subtle)',
+  fontSize: '0.7rem',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.08em',
+  fontWeight: 600,
+};
+
 export function CreateVaultForm({ onCreated }: Props) {
   const { address } = useAccount();
   const [amount, setAmount] = useState('');
@@ -36,7 +53,6 @@ export function CreateVaultForm({ onCreated }: Props) {
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([{ address: '', share: '100' }]);
   const [step, setStep] = useState<'idle' | 'approving' | 'creating'>('idle');
 
-  // Allowance check
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: USDC_ADDRESS,
     abi: USDC_ABI,
@@ -57,11 +73,11 @@ export function CreateVaultForm({ onCreated }: Props) {
     onCreated();
   }
 
-  function totalShares(): number {
+  function totalShares() {
     return beneficiaries.reduce((s, b) => s + (parseFloat(b.share) || 0), 0);
   }
 
-  function isValid(): boolean {
+  function isValid() {
     if (!pqKey.startsWith('0x') || pqKey.length !== 66) return false;
     if (!amount || parseFloat(amount) <= 0) return false;
     if (totalShares() !== 100) return false;
@@ -83,19 +99,13 @@ export function CreateVaultForm({ onCreated }: Props) {
 
   function handleSubmit() {
     if (!address || !isValid()) return;
-
     const amountWei = parseUnits(amount, 6);
     const needsApproval = !allowance || (allowance) < amountWei;
 
     if (needsApproval) {
       setStep('approving');
       writeContract(
-        {
-          address: USDC_ADDRESS,
-          abi: USDC_ABI,
-          functionName: 'approve',
-          args: [TRUSTDROP_ADDRESS, amountWei],
-        },
+        { address: USDC_ADDRESS, abi: USDC_ABI, functionName: 'approve', args: [TRUSTDROP_ADDRESS, amountWei] },
         { onError: (e) => { setStep('idle'); toast.error(e.message.slice(0, 80)); } }
       );
       return;
@@ -124,29 +134,28 @@ export function CreateVaultForm({ onCreated }: Props) {
 
   return (
     <div className="space-y-5">
+
       {/* PQ Key */}
       <div>
-        <label className="block text-xs text-white/50 uppercase tracking-wider mb-2">
-          Post-Quantum Public Key (SLH-DSA, 32 bytes)
-        </label>
+        <label style={labelStyle} className="block mb-2">Post-Quantum Public Key (SLH-DSA)</label>
         <input
           value={pqKey}
           onChange={(e) => setPqKey(e.target.value)}
-          placeholder="0x..."
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-mono
-                     text-white placeholder-white/20 focus:outline-none focus:border-sky-500/50"
+          placeholder="0x... (32 bytes / 64 hex chars)"
+          className="w-full px-4 py-3 mono text-sm"
+          style={{ ...inputStyle, fontSize: '0.78rem' }}
+          onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
+          onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
         />
-        <p className="mt-1.5 text-xs text-white/30 flex items-center gap-1">
-          <Info size={11} />
+        <p className="mt-1.5 flex items-center gap-1 text-xs" style={{ color: 'var(--subtle)', opacity: 0.7 }}>
+          <Info size={10} />
           Generate with the SLH-DSA key tool. Keep your private key offline.
         </p>
       </div>
 
       {/* Amount */}
       <div>
-        <label className="block text-xs text-white/50 uppercase tracking-wider mb-2">
-          Initial deposit (USDC)
-        </label>
+        <label style={labelStyle} className="block mb-2">Initial deposit</label>
         <div className="relative">
           <input
             type="number"
@@ -155,27 +164,34 @@ export function CreateVaultForm({ onCreated }: Props) {
             placeholder="0.00"
             min="0"
             step="0.01"
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-2xl font-bold
-                       text-white placeholder-white/20 focus:outline-none focus:border-sky-500/50 pr-20 tabular-nums"
+            className="w-full px-4 py-3 display text-2xl font-bold tabular-nums pr-20"
+            style={inputStyle}
+            onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
+            onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
           />
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 text-sm font-medium">USDC</span>
+          <span
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold"
+            style={{ color: 'var(--subtle)' }}
+          >
+            USDC
+          </span>
         </div>
       </div>
 
       {/* Interval */}
       <div>
-        <label className="block text-xs text-white/50 uppercase tracking-wider mb-2">
-          Check-in interval
-        </label>
+        <label style={labelStyle} className="block mb-2">Check-in interval</label>
         <div className="flex gap-2">
           {INTERVAL_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               onClick={() => setInterval(opt.value)}
-              className={`flex-1 py-2 rounded-xl text-xs font-medium border transition-colors
-                ${interval === opt.value
-                  ? 'bg-sky-500/20 border-sky-500/50 text-sky-300'
-                  : 'bg-white/5 border-white/10 text-white/50 hover:text-white/80'}`}
+              className="flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all"
+              style={{
+                background: interval === opt.value ? 'rgba(172,198,233,0.15)' : 'var(--surface)',
+                border: interval === opt.value ? '1px solid rgba(172,198,233,0.40)' : '1px solid var(--border)',
+                color: interval === opt.value ? 'var(--accent)' : 'var(--subtle)',
+              }}
             >
               {opt.label}
             </button>
@@ -185,18 +201,18 @@ export function CreateVaultForm({ onCreated }: Props) {
 
       {/* Grace window */}
       <div>
-        <label className="block text-xs text-white/50 uppercase tracking-wider mb-2">
-          Grace window after lapse
-        </label>
+        <label style={labelStyle} className="block mb-2">Grace window after lapse</label>
         <div className="flex gap-2">
           {GRACE_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               onClick={() => setGrace(opt.value)}
-              className={`flex-1 py-2 rounded-xl text-xs font-medium border transition-colors
-                ${grace === opt.value
-                  ? 'bg-sky-500/20 border-sky-500/50 text-sky-300'
-                  : 'bg-white/5 border-white/10 text-white/50 hover:text-white/80'}`}
+              className="flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all"
+              style={{
+                background: grace === opt.value ? 'rgba(172,198,233,0.15)' : 'var(--surface)',
+                border: grace === opt.value ? '1px solid rgba(172,198,233,0.40)' : '1px solid var(--border)',
+                color: grace === opt.value ? 'var(--accent)' : 'var(--subtle)',
+              }}
             >
               {opt.label}
             </button>
@@ -207,10 +223,11 @@ export function CreateVaultForm({ onCreated }: Props) {
       {/* Beneficiaries */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="text-xs text-white/50 uppercase tracking-wider">
-            Beneficiaries
-          </label>
-          <span className={`text-xs tabular-nums ${sharesOk ? 'text-emerald-400' : 'text-red-400'}`}>
+          <label style={labelStyle}>Beneficiaries</label>
+          <span
+            className="mono text-xs font-semibold tabular-nums"
+            style={{ color: sharesOk ? 'var(--success)' : 'var(--danger)' }}
+          >
             {totalShares()}% / 100%
           </span>
         </div>
@@ -221,8 +238,10 @@ export function CreateVaultForm({ onCreated }: Props) {
                 value={b.address}
                 onChange={(e) => updateBeneficiary(i, 'address', e.target.value)}
                 placeholder="0x... address"
-                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs font-mono
-                           text-white placeholder-white/20 focus:outline-none focus:border-sky-500/50"
+                className="flex-1 px-3 py-2.5 mono text-xs"
+                style={inputStyle}
+                onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
+                onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
               />
               <div className="relative w-20">
                 <input
@@ -231,15 +250,29 @@ export function CreateVaultForm({ onCreated }: Props) {
                   onChange={(e) => updateBeneficiary(i, 'share', e.target.value)}
                   min="0"
                   max="100"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white
-                             focus:outline-none focus:border-sky-500/50 pr-6 tabular-nums"
+                  className="w-full px-3 py-2.5 text-xs pr-6 tabular-nums"
+                  style={inputStyle}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
                 />
-                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/30 text-xs">%</span>
+                <span
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs"
+                  style={{ color: 'var(--subtle)' }}
+                >
+                  %
+                </span>
               </div>
               {beneficiaries.length > 1 && (
                 <button
                   onClick={() => removeBeneficiary(i)}
-                  className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors"
+                  className="p-2.5 rounded-xl transition-all"
+                  style={{
+                    background: 'rgba(248,113,113,0.08)',
+                    border: '1px solid rgba(248,113,113,0.18)',
+                    color: 'var(--danger)',
+                  }}
+                  onMouseEnter={(e) => ((e.currentTarget).style.background = 'rgba(248,113,113,0.18)')}
+                  onMouseLeave={(e) => ((e.currentTarget).style.background = 'rgba(248,113,113,0.08)')}
                 >
                   <Trash2 size={13} />
                 </button>
@@ -249,8 +282,14 @@ export function CreateVaultForm({ onCreated }: Props) {
         </div>
         <button
           onClick={addBeneficiary}
-          className="mt-2 w-full py-2 rounded-xl bg-white/5 border border-white/10 text-white/40
-                     text-xs flex items-center justify-center gap-1.5 hover:text-white/70 transition-colors"
+          className="mt-2 w-full py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all"
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            color: 'var(--subtle)',
+          }}
+          onMouseEnter={(e) => ((e.currentTarget).style.color = 'var(--ink-2)')}
+          onMouseLeave={(e) => ((e.currentTarget).style.color = 'var(--subtle)')}
         >
           <PlusCircle size={13} />
           Add beneficiary
@@ -261,8 +300,18 @@ export function CreateVaultForm({ onCreated }: Props) {
       <button
         onClick={handleSubmit}
         disabled={busy || !isValid() || !address}
-        className="w-full py-4 rounded-xl bg-sky-500 text-white font-bold text-sm
-                   hover:bg-sky-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        className="w-full py-4 rounded-xl font-bold text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+        style={{
+          background: 'var(--accent)',
+          color: '#0d1b2f',
+        }}
+        onMouseEnter={(e) => {
+          if (!(e.currentTarget).disabled)
+            (e.currentTarget).style.background = 'var(--accent-hover)';
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget).style.background = 'var(--accent)';
+        }}
       >
         {busy
           ? step === 'approving'

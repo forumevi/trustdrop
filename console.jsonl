@@ -231,3 +231,107 @@
 {"level":"log","message":"[vite] server connection lost. Polling for restart...","timestamp":1792787749115}
 {"level":"debug","message":"[vite] connected.","timestamp":1792787752453}
 {"level":"debug","message":"[vite] connected.","timestamp":1792787753008}
+{"level":"debug","message":"[vite] connected.","timestamp":1792787752453}
+{"level":"debug","message":"[vite] connected.","timestamp":1792787753008}
+{"level":"warn","message":"Error restoring session i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787760528,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"(previous line repeated 1× more)","timestamp":1792787760530}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787760530,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787760531,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"Error restoring session i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787761151,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"(previous line repeated 1× more)","timestamp":1792787761152}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787761152,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787761152,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"Error restoring session i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787760528,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"(previous line repeated 1× more)","timestamp":1792787760530}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787760530,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787760531,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"Error restoring session i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787761151,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"(previous line repeated 1× more)","timestamp":1792787761152}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787761152,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787761152,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"debug","message":"[vite] connected.","timestamp":1792787769612}
+{"level":"debug","message":"[vite] connected.","timestamp":1792787769612}
+{"level":"warn","message":"Error restoring session i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787777969,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"(previous line repeated 1× more)","timestamp":1792787777971}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787777971,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787777971,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"Error restoring session i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787777969,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"(previous line repeated 1× more)","timestamp":1792787777971}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787777971,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787777971,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"debug","message":"[vite] connected.","timestamp":1792787787407}
+{"level":"debug","message":"[vite] connected.","timestamp":1792787787407}
+{"level":"warn","message":"Error restoring session i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787797043,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"(previous line repeated 1× more)","timestamp":1792787797052}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787797052,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787797052,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"Error restoring session i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787797043,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"(previous line repeated 1× more)","timestamp":1792787797052}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787797052,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787797052,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792787803021}
+{"level":"debug","message":"[vite] connected.","timestamp":1792787803753}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792787803021}
+{"level":"debug","message":"[vite] connected.","timestamp":1792787803753}
+{"level":"debug","message":"[vite] connected.","timestamp":1792787809097}
+{"level":"debug","message":"[vite] connected.","timestamp":1792787809097}
+{"level":"warn","message":"Error restoring session i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787816945,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"(previous line repeated 1× more)","timestamp":1792787816946}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787816946,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787816946,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"Error restoring session i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787816945,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"(previous line repeated 1× more)","timestamp":1792787816946}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787816946,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787816946,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"Error restoring session i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787818039,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"(previous line repeated 1× more)","timestamp":1792787818056}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787818056,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787818062,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"Error restoring session i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787818039,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"(previous line repeated 1× more)","timestamp":1792787818056}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787818056,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787818062,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"debug","message":"[vite] hot updated: /src/components/VaultCard.tsx","timestamp":1792787844590}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792787844590}
+{"level":"debug","message":"[vite] hot updated: /src/components/VaultCard.tsx","timestamp":1792787844590}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792787844590}
+{"level":"warn","message":"Error restoring session i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787856891,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"(previous line repeated 1× more)","timestamp":1792787856893}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787856894,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787856894,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"Error restoring session i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787856891,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"warn","message":"(previous line repeated 1× more)","timestamp":1792787856893}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787856894,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"error","message":"Unhandled promise rejection: i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)","timestamp":1792787856894,"stack":"i: Failed to connect to MetaMask\n    at Object.connect (chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/scripts/inpage.js:12:4822)"}
+{"level":"debug","message":"[vite] hot updated: /src/components/CreateVaultForm.tsx","timestamp":1792787867462}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792787867463}
+{"level":"debug","message":"[vite] hot updated: /src/components/CreateVaultForm.tsx","timestamp":1792787867473}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792787867473}
+{"level":"debug","message":"[vite] hot updated: /src/components/CreateVaultForm.tsx","timestamp":1792787867462}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792787867463}
+{"level":"debug","message":"[vite] hot updated: /src/components/CreateVaultForm.tsx","timestamp":1792787867473}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792787867473}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1792787870398}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792787870398}
+{"level":"debug","message":"[vite] hot updated: /src/components/VaultCard.tsx","timestamp":1792787870400}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792787870401}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1792787870623}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792787870623}
+{"level":"debug","message":"[vite] hot updated: /src/components/VaultCard.tsx","timestamp":1792787870626}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792787870626}
+{"level":"debug","message":"[vite] hot updated: /src/components/CreateVaultForm.tsx","timestamp":1792787871073}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792787871073}
+{"level":"debug","message":"[vite] hot updated: /src/components/CreateVaultForm.tsx","timestamp":1792787871079}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792787871079}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1792787870398}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792787870398}
+{"level":"debug","message":"[vite] hot updated: /src/components/VaultCard.tsx","timestamp":1792787870400}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792787870401}
+{"level":"debug","message":"[vite] hot updated: /src/App.tsx","timestamp":1792787870623}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792787870623}
+{"level":"debug","message":"[vite] hot updated: /src/components/VaultCard.tsx","timestamp":1792787870626}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792787870626}
+{"level":"debug","message":"[vite] hot updated: /src/components/CreateVaultForm.tsx","timestamp":1792787871073}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792787871073}
+{"level":"debug","message":"[vite] hot updated: /src/components/CreateVaultForm.tsx","timestamp":1792787871079}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792787871079}

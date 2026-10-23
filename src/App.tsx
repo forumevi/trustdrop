@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ConnectKitButton } from 'connectkit';
 import { useAccount, useReadContract } from 'wagmi';
-import { Shield, Plus, X, ExternalLink } from 'lucide-react';
+import { Shield, Plus, X, ExternalLink, Lock } from 'lucide-react';
 import { VaultCard } from './components/VaultCard';
 import { CreateVaultForm } from './components/CreateVaultForm';
 import { TRUSTDROP_ABI, TRUSTDROP_ADDRESS } from './lib/trustdrop';
@@ -11,12 +11,11 @@ export default function App() {
   const [showCreate, setShowCreate] = useState(false);
   const [tick, setTick] = useState(0);
 
-  // Poll countdown every second
   useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(id);
   }, []);
-  void tick; // used to re-render countdown
+  void tick;
 
   const { data: nextVaultId, refetch: refetchCount } = useReadContract({
     address: TRUSTDROP_ADDRESS,
@@ -26,35 +25,51 @@ export default function App() {
 
   const vaultCount = nextVaultId ? Number(nextVaultId) - 1 : 0;
   const vaultIds = Array.from({ length: vaultCount }, (_, i) => BigInt(i + 1));
-
   const isDeployed = TRUSTDROP_ADDRESS.length > 0;
 
   return (
-    <div
-      className="min-h-dvh bg-[#0a0d14] text-white"
-      style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}
-    >
+    <div className="min-h-dvh" style={{ background: 'var(--bg-gradient)', backgroundAttachment: 'fixed' }}>
+
       {/* Header */}
-      <header className="border-b border-white/8 px-4 py-4">
+      <header
+        className="sticky top-0 z-20 border-b px-5 py-3.5"
+        style={{
+          background: 'rgba(13,27,47,0.85)',
+          backdropFilter: 'blur(20px)',
+          borderColor: 'var(--border)',
+        }}
+      >
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-sky-500/20 border border-sky-500/30 flex items-center justify-center">
-              <Shield size={16} className="text-sky-400" />
+            <div
+              className="w-9 h-9 rounded-2xl flex items-center justify-center"
+              style={{ background: 'rgba(172,198,233,0.12)', border: '1px solid rgba(172,198,233,0.2)' }}
+            >
+              <Lock size={15} style={{ color: 'var(--accent)' }} />
             </div>
             <div>
-              <h1 className="text-base font-bold tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              <h1
+                className="display text-base font-bold"
+                style={{ color: 'var(--ink)', letterSpacing: '-0.02em' }}
+              >
                 TrustDrop
               </h1>
-              <p className="text-xs text-white/40 leading-none">USDC inheritance vault</p>
+              <p className="text-xs" style={{ color: 'var(--subtle)', lineHeight: 1.2 }}>
+                USDC inheritance vault · Arc mainnet
+              </p>
             </div>
           </div>
+
           <div className="flex items-center gap-3">
             {isDeployed && (
               <a
                 href={`https://explorer.arc.io/address/${TRUSTDROP_ADDRESS}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-white/30 hover:text-white/60 flex items-center gap-1 transition-colors"
+                className="hidden md:flex items-center gap-1 text-xs transition-colors"
+                style={{ color: 'var(--subtle)' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--subtle)')}
               >
                 <ExternalLink size={11} />
                 Contract
@@ -65,69 +80,133 @@ export default function App() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-10">
+      <main className="max-w-5xl mx-auto px-5 py-12">
+
         {/* Hero */}
-        <div className="mb-12 max-w-xl">
-          <h2
-            className="text-4xl font-bold tracking-tight mb-3 text-balance"
-            style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.025em' }}
+        <div className="mb-14 max-w-2xl">
+          <div
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-5"
+            style={{
+              background: 'rgba(172,198,233,0.10)',
+              border: '1px solid rgba(172,198,233,0.20)',
+              color: 'var(--accent)',
+            }}
           >
-            Your USDC, secured by proof of life.
+            <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            Live on Arc mainnet
+          </div>
+          <h2
+            className="display text-4xl md:text-5xl font-bold mb-4 text-balance"
+            style={{ color: 'var(--ink)', letterSpacing: '-0.035em', lineHeight: 1.1 }}
+          >
+            Your USDC,
+            <br />
+            <span style={{ color: 'var(--accent)' }}>secured by proof of life.</span>
           </h2>
-          <p className="text-white/50 text-base leading-relaxed text-pretty">
-            Lock USDC in a vault. Check in periodically with a post-quantum signature.
-            If you stop checking in, your beneficiaries can claim the funds automatically.
-            Even a stolen wallet cannot fake a check-in — it takes the offline key card.
+          <p
+            className="text-base leading-relaxed text-pretty max-w-xl"
+            style={{ color: 'var(--muted)' }}
+          >
+            Lock USDC in a vault. Check in periodically with a post-quantum SLH-DSA signature.
+            If you stop checking in, your beneficiaries claim the funds automatically.
+            A stolen wallet cannot fake a check-in — it requires the offline key card.
           </p>
         </div>
 
         {/* How it works */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-14">
           {[
             {
               step: '01',
               title: 'Create a vault',
-              desc: 'Lock USDC, set check-in interval, choose beneficiaries and their shares.',
+              desc: 'Lock USDC, set your check-in interval, add beneficiaries and their percentage shares.',
             },
             {
               step: '02',
               title: 'Check in regularly',
-              desc: 'Sign a message with your offline SLH-DSA key card. No key card = no fake check-in.',
+              desc: 'Sign a message with your offline SLH-DSA key card. No key card, no valid check-in.',
             },
             {
               step: '03',
               title: 'Miss a check-in?',
-              desc: 'After the grace window, beneficiaries can claim. Or withdraw anytime while active.',
+              desc: 'After the grace window expires, any beneficiary can claim. Or withdraw anytime while active.',
             },
           ].map((item) => (
-            <div key={item.step} className="bg-white/4 border border-white/8 rounded-2xl p-5">
-              <span className="text-xs font-mono text-sky-500/60 tracking-widest">{item.step}</span>
-              <h3 className="font-semibold text-white mt-2 mb-1.5">{item.title}</h3>
-              <p className="text-sm text-white/40 leading-relaxed">{item.desc}</p>
+            <div
+              key={item.step}
+              className="rounded-2xl p-6"
+              style={{
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              <span
+                className="mono text-xs font-medium tracking-widest"
+                style={{ color: 'var(--accent)', opacity: 0.7 }}
+              >
+                {item.step}
+              </span>
+              <h3
+                className="font-semibold mt-2.5 mb-2 text-sm"
+                style={{ color: 'var(--ink-2)' }}
+              >
+                {item.title}
+              </h3>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--subtle)' }}>
+                {item.desc}
+              </p>
             </div>
           ))}
         </div>
 
-        {/* Not deployed notice */}
+        {/* Not deployed */}
         {!isDeployed && (
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 mb-8 text-sm text-amber-300/80">
-            Contract not yet deployed to Arc mainnet. Deploy first, then set{' '}
-            <code className="font-mono text-amber-300">VITE_TRUSTDROP_ADDRESS</code> in .env.
+          <div
+            className="rounded-2xl p-5 mb-8 text-sm"
+            style={{
+              background: 'rgba(251,191,36,0.08)',
+              border: '1px solid rgba(251,191,36,0.20)',
+              color: '#fbbf24cc',
+            }}
+          >
+            Contract not yet deployed. Set{' '}
+            <code className="mono text-yellow-300">VITE_TRUSTDROP_ADDRESS</code> in .env.
           </div>
         )}
 
-        {/* Vault list + create */}
+        {/* Vault section */}
         {isDeployed && (
           <>
+            {/* Section header */}
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-semibold text-white/70 text-sm uppercase tracking-wider">
-                All vaults ({vaultCount})
-              </h3>
+              <div>
+                <h3
+                  className="font-semibold text-sm uppercase tracking-widest"
+                  style={{ color: 'var(--subtle)' }}
+                >
+                  All vaults
+                </h3>
+                {vaultCount > 0 && (
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--subtle)', opacity: 0.6 }}>
+                    {vaultCount} vault{vaultCount !== 1 ? 's' : ''} on Arc mainnet
+                  </p>
+                )}
+              </div>
               {isConnected && (
                 <button
                   onClick={() => setShowCreate(!showCreate)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-500 text-white text-sm font-semibold
-                             hover:bg-sky-400 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                  style={{
+                    background: showCreate ? 'var(--surface)' : 'var(--accent)',
+                    color: showCreate ? 'var(--muted)' : '#0d1b2f',
+                    border: showCreate ? '1px solid var(--border)' : 'none',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!showCreate) (e.currentTarget).style.background = 'var(--accent-hover)';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!showCreate) (e.currentTarget).style.background = 'var(--accent)';
+                  }}
                 >
                   {showCreate ? <X size={14} /> : <Plus size={14} />}
                   {showCreate ? 'Cancel' : 'New vault'}
@@ -137,8 +216,19 @@ export default function App() {
 
             {/* Create form */}
             {showCreate && isConnected && (
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
-                <h4 className="font-semibold mb-5 text-white/80">Create vault</h4>
+              <div
+                className="rounded-2xl p-6 mb-6"
+                style={{
+                  background: 'var(--surface-strong)',
+                  border: '1px solid var(--border-strong)',
+                }}
+              >
+                <h4
+                  className="display font-semibold mb-5 text-base"
+                  style={{ color: 'var(--ink)', letterSpacing: '-0.02em' }}
+                >
+                  Create vault
+                </h4>
                 <CreateVaultForm
                   onCreated={() => {
                     setShowCreate(false);
@@ -150,9 +240,27 @@ export default function App() {
 
             {/* Vault grid */}
             {vaultCount === 0 ? (
-              <div className="text-center py-16 text-white/30">
-                <Shield size={40} className="mx-auto mb-4 opacity-20" />
-                <p className="text-sm">No vaults yet. Create the first one.</p>
+              <div
+                className="text-center py-20 rounded-2xl"
+                style={{ border: '1px dashed var(--border)' }}
+              >
+                <div
+                  className="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                >
+                  <Shield size={22} style={{ color: 'var(--subtle)', opacity: 0.5 }} />
+                </div>
+                <p className="text-sm font-medium" style={{ color: 'var(--muted)' }}>
+                  No vaults yet
+                </p>
+                <p className="text-xs mt-1" style={{ color: 'var(--subtle)' }}>
+                  {isConnected ? 'Create the first vault.' : 'Connect your wallet to create a vault.'}
+                </p>
+                {!isConnected && (
+                  <div className="mt-5">
+                    <ConnectKitButton />
+                  </div>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -163,27 +271,26 @@ export default function App() {
             )}
           </>
         )}
-
-        {/* Connect prompt */}
-        {!isConnected && isDeployed && (
-          <div className="text-center py-16">
-            <p className="text-white/40 text-sm mb-4">Connect your wallet to create a vault.</p>
-            <ConnectKitButton />
-          </div>
-        )}
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/8 px-4 py-6 mt-10">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-white/25">
-          <p>TrustDrop — built on Arc mainnet with Arc Studio. Unaudited prototype.</p>
+      <footer
+        className="border-t px-5 py-6 mt-12"
+        style={{ borderColor: 'var(--border)' }}
+      >
+        <div
+          className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs"
+          style={{ color: 'var(--subtle)', opacity: 0.6 }}
+        >
+          <p>TrustDrop · built on Arc mainnet with Arc Studio · unaudited prototype</p>
           <p>
             Arc uses USDC as gas. Transactions are irreversible.{' '}
             <a
               href="https://docs.arc.io"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline hover:text-white/50 transition-colors"
+              className="underline"
+              style={{ color: 'var(--accent)' }}
             >
               docs.arc.io
             </a>

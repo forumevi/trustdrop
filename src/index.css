@@ -2,12 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg: #0d1b2f;
+  --bg-gradient: linear-gradient(180deg, #0b1520 0%, #0d1b2f 58%, #122d45 100%);
+  --surface: rgba(255, 255, 255, 0.06);
+  --surface-strong: rgba(255, 255, 255, 0.10);
+  --surface-muted: #1a2a3f;
+  --ink: #f0f4fa;
+  --ink-2: #dde8f5;
+  --muted: #94a3b8;
+  --subtle: #64748b;
+  --border: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(172, 198, 233, 0.35);
+  --accent: #acc6e9;
+  --accent-hover: #cbdbf2;
+  --success: #6ee79a;
+  --danger: #f87171;
+}
+
 * {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
   min-height: 100dvh;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg-gradient);
+  background-attachment: fixed;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+.display {
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.03em;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', Menlo, monospace;
+}
+
+/* ConnectKit override — match dark theme */
+:root {
+  --ck-font-family: 'DM Sans', sans-serif;
+  --ck-border-radius: 16px;
+  --ck-overlay-backdrop-filter: blur(8px);
 }

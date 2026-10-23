@@ -1,6 +1,6 @@
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useAccount } from 'wagmi';
 import { formatUnits } from 'viem';
-import { ShieldCheck, ShieldOff, Clock, ArrowDownCircle, LogIn } from 'lucide-react';
+import { ShieldCheck, ShieldOff, Clock, LogIn, ArrowDownCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { TRUSTDROP_ABI, TRUSTDROP_ADDRESS, formatTs, formatCountdown } from '@/lib/trustdrop';
 
@@ -28,13 +28,14 @@ export function VaultCard({ vaultId }: VaultCardProps) {
   const { writeContract, data: txHash, isPending } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash: txHash });
 
-  if (isSuccess) {
-    refetch();
-  }
+  if (isSuccess) refetch();
 
   if (!status) {
     return (
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-5 animate-pulse h-48" />
+      <div
+        className="rounded-2xl p-5 h-52 animate-pulse"
+        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+      />
     );
   }
 
@@ -45,13 +46,13 @@ export function VaultCard({ vaultId }: VaultCardProps) {
   const countdown = formatCountdown(nextDeadlineNum);
 
   const statusColor = settled
-    ? 'text-gray-400'
+    ? 'var(--subtle)'
     : lapsed
-    ? 'text-red-400'
-    : 'text-emerald-400';
+    ? 'var(--danger)'
+    : 'var(--success)';
 
-  const statusLabel = settled ? 'Settled' : lapsed ? 'Lapsed — claimable' : 'Active';
-  const StatusIcon = settled ? ShieldOff : lapsed ? ShieldOff : ShieldCheck;
+  const statusLabel = settled ? 'Settled' : lapsed ? 'Lapsed' : 'Active';
+  const StatusIcon = settled || lapsed ? ShieldOff : ShieldCheck;
 
   function handleClaim() {
     writeContract(
@@ -64,38 +65,65 @@ export function VaultCard({ vaultId }: VaultCardProps) {
   }
 
   return (
-    <div className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4 hover:bg-white/8 transition-colors">
-      {/* Header */}
+    <div
+      className="rounded-2xl p-5 space-y-4 transition-all"
+      style={{
+        background: 'var(--surface)',
+        border: `1px solid ${lapsed && !settled ? 'rgba(248,113,113,0.30)' : 'var(--border)'}`,
+      }}
+      onMouseEnter={(e) => ((e.currentTarget).style.background = 'var(--surface-strong)')}
+      onMouseLeave={(e) => ((e.currentTarget).style.background = 'var(--surface)')}
+    >
+      {/* Header row */}
       <div className="flex items-center justify-between">
-        <span className="font-mono text-xs text-white/40 tracking-widest uppercase">Vault #{vaultId.toString()}</span>
-        <div className={`flex items-center gap-1.5 text-xs font-medium ${statusColor}`}>
-          <StatusIcon size={13} />
+        <span
+          className="mono text-xs tracking-widest uppercase"
+          style={{ color: 'var(--subtle)' }}
+        >
+          Vault #{vaultId.toString()}
+        </span>
+        <div className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: statusColor }}>
+          <StatusIcon size={12} />
           {statusLabel}
         </div>
       </div>
 
       {/* Balance */}
       <div>
-        <p className="text-3xl font-bold text-white tabular-nums tracking-tight">
+        <p
+          className="display text-3xl font-bold tabular-nums"
+          style={{ color: 'var(--ink)', letterSpacing: '-0.03em' }}
+        >
           ${balanceUsd}
         </p>
-        <p className="text-xs text-white/40 mt-0.5">USDC locked</p>
+        <p className="text-xs mt-0.5" style={{ color: 'var(--subtle)' }}>USDC locked</p>
       </div>
 
       {/* Timeline */}
       {!settled && (
-        <div className="grid grid-cols-2 gap-3 text-xs">
-          <div className="bg-white/5 rounded-xl p-3">
-            <p className="text-white/40 mb-1 flex items-center gap-1">
-              <LogIn size={11} /> Last check-in
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="rounded-xl p-3" style={{ background: 'var(--surface-muted)' }}>
+            <p className="flex items-center gap-1 text-xs mb-1" style={{ color: 'var(--subtle)' }}>
+              <LogIn size={10} /> Last check-in
             </p>
-            <p className="text-white font-medium">{formatTs(Number(lastCheckIn))}</p>
+            <p className="text-xs font-medium" style={{ color: 'var(--ink-2)' }}>
+              {formatTs(Number(lastCheckIn))}
+            </p>
           </div>
-          <div className={`bg-white/5 rounded-xl p-3 ${lapsed ? 'ring-1 ring-red-500/40' : ''}`}>
-            <p className="text-white/40 mb-1 flex items-center gap-1">
-              <Clock size={11} /> {lapsed ? 'Lapsed since' : 'Next deadline in'}
+          <div
+            className="rounded-xl p-3"
+            style={{
+              background: lapsed ? 'rgba(248,113,113,0.08)' : 'var(--surface-muted)',
+              border: lapsed ? '1px solid rgba(248,113,113,0.25)' : 'none',
+            }}
+          >
+            <p className="flex items-center gap-1 text-xs mb-1" style={{ color: 'var(--subtle)' }}>
+              <Clock size={10} /> {lapsed ? 'Lapsed' : 'Next deadline'}
             </p>
-            <p className={`font-medium tabular-nums ${lapsed ? 'text-red-400' : 'text-white'}`}>
+            <p
+              className="text-xs font-semibold tabular-nums"
+              style={{ color: lapsed ? 'var(--danger)' : 'var(--ink-2)' }}
+            >
               {lapsed ? formatTs(nextDeadlineNum) : countdown}
             </p>
           </div>
@@ -104,37 +132,47 @@ export function VaultCard({ vaultId }: VaultCardProps) {
 
       {/* Beneficiaries */}
       {beneficiaryData && beneficiaryData[0].length > 0 && (
-        <div className="space-y-1">
-          <p className="text-xs text-white/40 uppercase tracking-wider">Beneficiaries</p>
-          {beneficiaryData[0].map((addr, i) => (
-            <div key={addr} className="flex items-center justify-between text-xs">
-              <span className="font-mono text-white/60">
-                {addr.slice(0, 6)}…{addr.slice(-4)}
-              </span>
-              <span className="text-white/80 tabular-nums">
-                {(Number(beneficiaryData[1][i]) / 100).toFixed(0)}%
-              </span>
-            </div>
-          ))}
+        <div>
+          <p className="text-xs uppercase tracking-wider mb-2" style={{ color: 'var(--subtle)', opacity: 0.7 }}>
+            Beneficiaries
+          </p>
+          <div className="space-y-1.5">
+            {beneficiaryData[0].map((addr, i) => (
+              <div key={addr} className="flex items-center justify-between">
+                <span className="mono text-xs" style={{ color: 'var(--muted)' }}>
+                  {addr.slice(0, 6)}…{addr.slice(-4)}
+                </span>
+                <span className="text-xs font-medium tabular-nums" style={{ color: 'var(--ink-2)' }}>
+                  {(Number(beneficiaryData[1][i]) / 100).toFixed(0)}%
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Owner label */}
+      {/* Owner badge */}
       {isOwner && !settled && (
-        <p className="text-xs text-sky-400/70 flex items-center gap-1">
+        <p className="text-xs flex items-center gap-1.5" style={{ color: 'var(--accent)', opacity: 0.8 }}>
           <ShieldCheck size={11} /> You own this vault
         </p>
       )}
 
-      {/* Claim button — visible to anyone when lapsed */}
+      {/* Claim button */}
       {lapsed && !settled && (
         <button
           onClick={handleClaim}
           disabled={isPending || isConfirming}
-          className="w-full py-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-300 text-sm font-semibold
-                     hover:bg-red-500/30 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+          style={{
+            background: 'rgba(248,113,113,0.15)',
+            border: '1px solid rgba(248,113,113,0.30)',
+            color: 'var(--danger)',
+          }}
+          onMouseEnter={(e) => ((e.currentTarget).style.background = 'rgba(248,113,113,0.25)')}
+          onMouseLeave={(e) => ((e.currentTarget).style.background = 'rgba(248,113,113,0.15)')}
         >
-          <ArrowDownCircle size={16} />
+          <ArrowDownCircle size={15} />
           {isPending || isConfirming ? 'Claiming…' : 'Claim funds'}
         </button>
       )}
