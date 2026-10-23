@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ConnectKitButton } from 'connectkit';
 import { useAccount, useReadContract } from 'wagmi';
-import { Shield, Plus, X, ExternalLink, Lock } from 'lucide-react';
+import { Shield, Plus, ExternalLink, ArrowRight, Lock, Clock, Users } from 'lucide-react';
 import { VaultCard } from './components/VaultCard';
 import { CreateVaultForm } from './components/CreateVaultForm';
 import { TRUSTDROP_ABI, TRUSTDROP_ADDRESS } from './lib/trustdrop';
@@ -26,277 +26,227 @@ export default function App() {
   const vaultCount = nextVaultId ? Number(nextVaultId) - 1 : 0;
   const vaultIds = Array.from({ length: vaultCount }, (_, i) => BigInt(i + 1));
   const isDeployed = TRUSTDROP_ADDRESS.length > 0;
+  const hasVaults = vaultCount > 0 || showCreate;
 
   return (
-    <div className="min-h-dvh" style={{ background: 'var(--bg-gradient)', backgroundAttachment: 'fixed' }}>
+    <div className="min-h-dvh" style={{ background: '#0a0b0e', color: '#f0f4fa', fontFamily: "'DM Sans', sans-serif" }}>
 
-      {/* Header */}
-      <header
-        className="sticky top-0 z-20 border-b px-5 py-3.5"
-        style={{
-          background: 'rgba(13,27,47,0.85)',
-          backdropFilter: 'blur(20px)',
-          borderColor: 'var(--border)',
-        }}
-      >
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-9 h-9 rounded-2xl flex items-center justify-center"
-              style={{ background: 'rgba(172,198,233,0.12)', border: '1px solid rgba(172,198,233,0.2)' }}
-            >
-              <Lock size={15} style={{ color: 'var(--accent)' }} />
+      {/* ─── NAV ─────────────────────────────────────────────── */}
+      <nav style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }} className="px-6 py-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div style={{ background: 'rgba(172,198,233,0.12)', border: '1px solid rgba(172,198,233,0.2)' }}
+              className="w-8 h-8 rounded-lg flex items-center justify-center">
+              <Shield size={15} style={{ color: '#acc6e9' }} />
             </div>
-            <div>
-              <h1
-                className="display text-base font-bold"
-                style={{ color: 'var(--ink)', letterSpacing: '-0.02em' }}
-              >
-                TrustDrop
-              </h1>
-              <p className="text-xs" style={{ color: 'var(--subtle)', lineHeight: 1.2 }}>
-                USDC inheritance vault · Arc mainnet
-              </p>
-            </div>
+            <span className="font-semibold text-sm tracking-tight display" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              TrustDrop
+            </span>
           </div>
-
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {isDeployed && (
               <a
                 href={`https://explorer.arc.io/address/${TRUSTDROP_ADDRESS}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden md:flex items-center gap-1 text-xs transition-colors"
-                style={{ color: 'var(--subtle)' }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent)')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--subtle)')}
+                className="hidden sm:flex items-center gap-1.5 text-xs transition-colors"
+                style={{ color: 'rgba(255,255,255,0.3)' }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.6)')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.3)')}
               >
                 <ExternalLink size={11} />
-                Contract
+                Arc mainnet
               </a>
             )}
             <ConnectKitButton />
           </div>
         </div>
-      </header>
+      </nav>
 
-      <main className="max-w-5xl mx-auto px-5 py-12">
+      {/* ─── HERO ────────────────────────────────────────────── */}
+      {!hasVaults && (
+        <section className="max-w-6xl mx-auto px-6 pt-20 pb-16 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
-        {/* Hero */}
-        <div className="mb-14 max-w-2xl">
-          <div
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-5"
-            style={{
-              background: 'rgba(172,198,233,0.10)',
-              border: '1px solid rgba(172,198,233,0.20)',
-              color: 'var(--accent)',
-            }}
-          >
-            <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            Live on Arc mainnet
-          </div>
-          <h2
-            className="display text-4xl md:text-5xl font-bold mb-4 text-balance"
-            style={{ color: 'var(--ink)', letterSpacing: '-0.035em', lineHeight: 1.1 }}
-          >
-            Your USDC,
-            <br />
-            <span style={{ color: 'var(--accent)' }}>secured by proof of life.</span>
-          </h2>
-          <p
-            className="text-base leading-relaxed text-pretty max-w-xl"
-            style={{ color: 'var(--muted)' }}
-          >
-            Lock USDC in a vault. Check in periodically with a post-quantum SLH-DSA signature.
-            If you stop checking in, your beneficiaries claim the funds automatically.
-            A stolen wallet cannot fake a check-in — it requires the offline key card.
-          </p>
-        </div>
-
-        {/* How it works */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-14">
-          {[
-            {
-              step: '01',
-              title: 'Create a vault',
-              desc: 'Lock USDC, set your check-in interval, add beneficiaries and their percentage shares.',
-            },
-            {
-              step: '02',
-              title: 'Check in regularly',
-              desc: 'Sign a message with your offline SLH-DSA key card. No key card, no valid check-in.',
-            },
-            {
-              step: '03',
-              title: 'Miss a check-in?',
-              desc: 'After the grace window expires, any beneficiary can claim. Or withdraw anytime while active.',
-            },
-          ].map((item) => (
-            <div
-              key={item.step}
-              className="rounded-2xl p-6"
-              style={{
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              <span
-                className="mono text-xs font-medium tracking-widest"
-                style={{ color: 'var(--accent)', opacity: 0.7 }}
-              >
-                {item.step}
-              </span>
-              <h3
-                className="font-semibold mt-2.5 mb-2 text-sm"
-                style={{ color: 'var(--ink-2)' }}
-              >
-                {item.title}
-              </h3>
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--subtle)' }}>
-                {item.desc}
-              </p>
+          {/* LEFT: copy */}
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-8 text-xs font-medium"
+              style={{ background: 'rgba(110,231,154,0.08)', border: '1px solid rgba(110,231,154,0.2)', color: '#6ee79a' }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Live on Arc mainnet · Chain 5042
             </div>
-          ))}
-        </div>
 
-        {/* Not deployed */}
-        {!isDeployed && (
-          <div
-            className="rounded-2xl p-5 mb-8 text-sm"
-            style={{
-              background: 'rgba(251,191,36,0.08)',
-              border: '1px solid rgba(251,191,36,0.20)',
-              color: '#fbbf24cc',
-            }}
-          >
-            Contract not yet deployed. Set{' '}
-            <code className="mono text-yellow-300">VITE_TRUSTDROP_ADDRESS</code> in .env.
-          </div>
-        )}
+            <h1
+              className="text-5xl lg:text-6xl font-bold leading-[1.05] mb-6 text-balance"
+              style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.03em' }}
+            >
+              Your USDC,<br />
+              <span style={{ color: '#acc6e9' }}>alive as long<br />as you are.</span>
+            </h1>
 
-        {/* Vault section */}
-        {isDeployed && (
-          <>
-            {/* Section header */}
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <h3
-                  className="font-semibold text-sm uppercase tracking-widest"
-                  style={{ color: 'var(--subtle)' }}
-                >
-                  All vaults
-                </h3>
-                {vaultCount > 0 && (
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--subtle)', opacity: 0.6 }}>
-                    {vaultCount} vault{vaultCount !== 1 ? 's' : ''} on Arc mainnet
-                  </p>
-                )}
-              </div>
-              {isConnected && (
+            <p className="text-lg leading-relaxed mb-10" style={{ color: 'rgba(255,255,255,0.45)', maxWidth: '42ch' }}>
+              Lock USDC in a vault. Check in monthly with a post-quantum signature.
+              Miss a check-in — your beneficiaries claim everything. No middleman. No lawyer. No trust.
+            </p>
+
+            <div className="flex items-center gap-4 flex-wrap">
+              {isConnected ? (
                 <button
-                  onClick={() => setShowCreate(!showCreate)}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
-                  style={{
-                    background: showCreate ? 'var(--surface)' : 'var(--accent)',
-                    color: showCreate ? 'var(--muted)' : '#0d1b2f',
-                    border: showCreate ? '1px solid var(--border)' : 'none',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!showCreate) (e.currentTarget).style.background = 'var(--accent-hover)';
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!showCreate) (e.currentTarget).style.background = 'var(--accent)';
-                  }}
+                  onClick={() => setShowCreate(true)}
+                  className="flex items-center gap-2.5 px-6 py-3.5 rounded-xl font-semibold text-sm transition-all"
+                  style={{ background: '#acc6e9', color: '#0a0b0e' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#cbdbf2')}
+                  onMouseLeave={e => (e.currentTarget.style.background = '#acc6e9')}
                 >
-                  {showCreate ? <X size={14} /> : <Plus size={14} />}
-                  {showCreate ? 'Cancel' : 'New vault'}
+                  Create a vault
+                  <ArrowRight size={16} />
                 </button>
+              ) : (
+                <ConnectKitButton />
               )}
+              <a
+                href="https://docs.arc.io"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm transition-colors"
+                style={{ color: 'rgba(255,255,255,0.35)' }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.65)')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
+              >
+                How Arc works →
+              </a>
             </div>
+          </div>
 
-            {/* Create form */}
-            {showCreate && isConnected && (
+          {/* RIGHT: feature cards */}
+          <div className="grid grid-cols-1 gap-3">
+            {[
+              {
+                icon: Lock,
+                title: 'Lock USDC',
+                desc: 'Deposit any amount. Set a check-in interval — 7 days, 30 days, 1 year. Choose beneficiaries and their percentage share.',
+              },
+              {
+                icon: Clock,
+                title: 'Prove you\'re alive',
+                desc: 'Sign a message with your offline post-quantum key card. Your EVM wallet alone cannot fake a check-in — the key card must be present.',
+              },
+              {
+                icon: Users,
+                title: 'Miss a check-in?',
+                desc: 'After the grace window, any beneficiary can trigger a claim. USDC is distributed instantly on Arc. No court. No delay.',
+              },
+            ].map(({ icon: Icon, title, desc }) => (
               <div
-                className="rounded-2xl p-6 mb-6"
-                style={{
-                  background: 'var(--surface-strong)',
-                  border: '1px solid var(--border-strong)',
-                }}
+                key={title}
+                className="flex gap-4 p-5 rounded-2xl"
+                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
               >
-                <h4
-                  className="display font-semibold mb-5 text-base"
-                  style={{ color: 'var(--ink)', letterSpacing: '-0.02em' }}
-                >
-                  Create vault
-                </h4>
-                <CreateVaultForm
-                  onCreated={() => {
-                    setShowCreate(false);
-                    void refetchCount();
-                  }}
-                />
-              </div>
-            )}
-
-            {/* Vault grid */}
-            {vaultCount === 0 ? (
-              <div
-                className="text-center py-20 rounded-2xl"
-                style={{ border: '1px dashed var(--border)' }}
-              >
-                <div
-                  className="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                >
-                  <Shield size={22} style={{ color: 'var(--subtle)', opacity: 0.5 }} />
+                <div className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center mt-0.5"
+                  style={{ background: 'rgba(172,198,233,0.1)', border: '1px solid rgba(172,198,233,0.15)' }}>
+                  <Icon size={16} style={{ color: '#acc6e9' }} />
                 </div>
-                <p className="text-sm font-medium" style={{ color: 'var(--muted)' }}>
-                  No vaults yet
+                <div>
+                  <p className="font-semibold text-sm mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{title}</p>
+                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.4)' }}>{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ─── VAULT AREA ─────────────────────────────────────── */}
+      {isDeployed && (
+        <section className="max-w-6xl mx-auto px-6 pb-20">
+
+          {hasVaults && (
+            <div className="flex items-center justify-between mb-8 pt-10">
+              <div>
+                <h2 className="font-bold text-xl display" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                  {showCreate && vaultCount === 0 ? 'Create a vault' : `Vaults (${vaultCount})`}
+                </h2>
+                <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                  Arc mainnet · USDC
                 </p>
-                <p className="text-xs mt-1" style={{ color: 'var(--subtle)' }}>
-                  {isConnected ? 'Create the first vault.' : 'Connect your wallet to create a vault.'}
-                </p>
-                {!isConnected && (
-                  <div className="mt-5">
-                    <ConnectKitButton />
-                  </div>
+              </div>
+              <div className="flex items-center gap-3">
+                {isConnected && !showCreate && (
+                  <button
+                    onClick={() => setShowCreate(true)}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                    style={{ background: '#acc6e9', color: '#0a0b0e' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = '#cbdbf2')}
+                    onMouseLeave={e => (e.currentTarget.style.background = '#acc6e9')}
+                  >
+                    <Plus size={14} />
+                    New vault
+                  </button>
+                )}
+                {showCreate && (
+                  <button
+                    onClick={() => setShowCreate(false)}
+                    className="px-4 py-2.5 rounded-xl text-sm transition-colors"
+                    style={{ color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}
+                    onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.7)')}
+                    onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.4)')}
+                  >
+                    Cancel
+                  </button>
                 )}
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {vaultIds.map((id) => (
-                  <VaultCard key={id.toString()} vaultId={id} />
-                ))}
-              </div>
-            )}
-          </>
-        )}
-      </main>
+            </div>
+          )}
 
-      {/* Footer */}
-      <footer
-        className="border-t px-5 py-6 mt-12"
-        style={{ borderColor: 'var(--border)' }}
-      >
-        <div
-          className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs"
-          style={{ color: 'var(--subtle)', opacity: 0.6 }}
-        >
-          <p>TrustDrop · built on Arc mainnet with Arc Studio · unaudited prototype</p>
-          <p>
-            Arc uses USDC as gas. Transactions are irreversible.{' '}
-            <a
-              href="https://docs.arc.io"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline"
-              style={{ color: 'var(--accent)' }}
-            >
-              docs.arc.io
-            </a>
-          </p>
+          {/* Create form */}
+          {showCreate && isConnected && (
+            <div className="rounded-2xl p-7 mb-8"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)' }}>
+              <CreateVaultForm
+                onCreated={() => {
+                  setShowCreate(false);
+                  void refetchCount();
+                }}
+              />
+            </div>
+          )}
+
+          {/* Connect prompt inside vault area */}
+          {!isConnected && hasVaults && (
+            <div className="text-center py-12">
+              <p className="text-sm mb-5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                Connect your wallet to create a vault
+              </p>
+              <ConnectKitButton />
+            </div>
+          )}
+
+          {/* Vault grid */}
+          {vaultCount > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {vaultIds.map((id) => (
+                <VaultCard key={id.toString()} vaultId={id} />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ─── FOOTER ─────────────────────────────────────────── */}
+      <footer className="px-6 py-8" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs"
+          style={{ color: 'rgba(255,255,255,0.2)' }}>
+          <p>TrustDrop · Built on Arc mainnet with Arc Studio · Unaudited prototype</p>
+          <div className="flex items-center gap-4">
+            <a href="https://github.com/forumevi/trustdrop" target="_blank" rel="noopener noreferrer"
+              className="transition-colors hover:text-white/40">GitHub</a>
+            <a href={`https://explorer.arc.io/address/${TRUSTDROP_ADDRESS}`} target="_blank" rel="noopener noreferrer"
+              className="transition-colors hover:text-white/40">Explorer</a>
+            <a href="https://docs.arc.io" target="_blank" rel="noopener noreferrer"
+              className="transition-colors hover:text-white/40">Docs</a>
+          </div>
         </div>
       </footer>
+
     </div>
   );
 }
