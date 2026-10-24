@@ -8,3 +8,5 @@ dist/
 *.pem
 contracts/out/
 contracts/cache/
+.env
+.env.*
