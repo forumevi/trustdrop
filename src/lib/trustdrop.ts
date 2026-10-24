@@ -1,5 +1,6 @@
 // TrustDrop contract ABI and address constants.
-// Deployed on Arc Testnet: 0xbfba2549c088af4ec9bc088e6692b3068e661f2b
+// Deployed on Arc Mainnet: 0x9A0f3a1d3c4212b1991Fb46b769Fe82C4b945d31 (v2, checkInECDSA + security fixes)
+// Previous mainnet deploy: 0x11526Cad05a63174392e7C7157929733eb5D8751 (v1)
 
 export const TRUSTDROP_ABI = [
   // Write functions

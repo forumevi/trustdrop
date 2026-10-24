@@ -19,10 +19,12 @@ Dead man's switch USDC inheritance vault on Arc mainnet. Lock USDC, check in per
 
 | Contract | Network | Address | Explorer |
 |---|---|---|---|
-| TrustDrop | Arc Mainnet | 0x11526Cad05a63174392e7C7157929733eb5D8751 | https://explorer.arc.io/address/0x11526Cad05a63174392e7C7157929733eb5D8751 |
+| TrustDrop v2 | Arc Mainnet | 0x9A0f3a1d3c4212b1991Fb46b769Fe82C4b945d31 | https://explorer.arc.io/address/0x9A0f3a1d3c4212b1991Fb46b769Fe82C4b945d31 |
+| TrustDrop v1 | Arc Mainnet | 0x11526Cad05a63174392e7C7157929733eb5D8751 | https://explorer.arc.io/address/0x11526Cad05a63174392e7C7157929733eb5D8751 |
 | TrustDrop | Arc Testnet | 0xbfba2549c088af4ec9bc088e6692b3068e661f2b | https://explorer.testnet.arc.io/address/0xbfba2549c088af4ec9bc088e6692b3068e661f2b |
 
-Deploy tx (mainnet): 0x6cfd4cfed7ac1aa7b151038f552540fd30235ada4c154d6cf34688ec69399076
+Deploy tx (v2 mainnet): 0x4f8a66d01df1e8b982a1b94cb2138690e74a53413ff96313180f61430d6d90ed
+Deploy tx (v1 mainnet): 0x6cfd4cfed7ac1aa7b151038f552540fd30235ada4c154d6cf34688ec69399076
 Deployer: 0x292685C0e1572Ec472cD8d4a971C9F26e262E27d
 
 ## Key Files
