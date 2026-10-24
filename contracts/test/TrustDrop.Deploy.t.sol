@@ -173,7 +173,7 @@ contract TrustDropDeployTest is TrustDropTestBase {
         uint256 vaultId = _createSimpleVault(100e6);
         _warpPastLapse();
         vm.prank(stranger);
-        trustDrop.claim(vaultId);
+        trustDrop.settle(vaultId);
         assertFalse(trustDrop.isLapsed(vaultId));
     }
 
@@ -223,42 +223,90 @@ contract TrustDropDeployTest is TrustDropTestBase {
         assertFalse(trustDrop.isLapsed(vaultId));
     }
 
-    // ── claim ─────────────────────────────────────────────────────────────────
+    // ── settle + claimShare ───────────────────────────────────────────────────
 
-    function test_Claim_SingleBeneficiaryReceivesAll() public {
+    function test_Settle_EmitsSettled() public {
         uint256 amount  = 1_000e6;
         uint256 vaultId = _createSimpleVault(amount);
-
         _warpPastLapse();
 
         vm.prank(stranger);
-        vm.expectEmit(true, true, false, true, address(trustDrop));
-        emit TrustDrop.Claimed(vaultId, stranger, amount);
-        trustDrop.claim(vaultId);
+        vm.expectEmit(true, false, false, false, address(trustDrop));
+        emit TrustDrop.Settled(vaultId);
+        trustDrop.settle(vaultId);
+    }
 
-        assertEq(usdc.balanceOf(alice), amount);
-        assertEq(usdc.balanceOf(address(trustDrop)), 0);
+    function test_Settle_MarksSettledAndZerosBalance() public {
+        uint256 amount  = 1_000e6;
+        uint256 vaultId = _createSimpleVault(amount);
+        _warpPastLapse();
+
+        trustDrop.settle(vaultId);
 
         (, uint256 bal,,,, bool settled) = trustDrop.vaultStatus(vaultId);
         assertEq(bal, 0);
         assertTrue(settled);
     }
 
-    function test_Claim_TwoBeneficiariesSplitCorrectly() public {
+    function test_Settle_PopulatesPendingClaims_Single() public {
         uint256 amount  = 1_000e6;
-        uint256 vaultId = _createSplitVault(amount);
-
+        uint256 vaultId = _createSimpleVault(amount);
         _warpPastLapse();
-        trustDrop.claim(vaultId);
 
-        // alice 60 % = 600e6 (first beneficiary uses floor division)
-        // bob  40 % = remainder = 400e6 (last beneficiary gets remainder)
-        assertEq(usdc.balanceOf(alice), 600e6);
-        assertEq(usdc.balanceOf(bob),   400e6);
+        trustDrop.settle(vaultId);
+
+        // alice is the sole beneficiary at 100 %
+        assertEq(trustDrop.pendingClaims(vaultId, alice), amount);
     }
 
-    function test_Claim_ThreeBeneficiariesLastGetsRemainder() public {
-        // 33.33 % * 3 leaves a 1-unit remainder — last beneficiary absorbs it
+    function test_Settle_PopulatesPendingClaims_Split() public {
+        uint256 amount  = 1_000e6;
+        uint256 vaultId = _createSplitVault(amount);
+        _warpPastLapse();
+
+        trustDrop.settle(vaultId);
+
+        // alice 60 % = 600e6, bob 40 % = remainder = 400e6
+        assertEq(trustDrop.pendingClaims(vaultId, alice), 600e6);
+        assertEq(trustDrop.pendingClaims(vaultId, bob),   400e6);
+    }
+
+    function test_ClaimShare_SingleBeneficiaryReceivesAll() public {
+        uint256 amount  = 1_000e6;
+        uint256 vaultId = _createSimpleVault(amount);
+        _warpPastLapse();
+
+        trustDrop.settle(vaultId);
+
+        vm.prank(alice);
+        vm.expectEmit(true, true, false, true, address(trustDrop));
+        emit TrustDrop.ShareClaimed(vaultId, alice, amount);
+        trustDrop.claimShare(vaultId);
+
+        assertEq(usdc.balanceOf(alice), amount);
+        assertEq(usdc.balanceOf(address(trustDrop)), 0);
+        assertEq(trustDrop.pendingClaims(vaultId, alice), 0);
+    }
+
+    function test_ClaimShare_TwoBeneficiariesSplitCorrectly() public {
+        uint256 amount  = 1_000e6;
+        uint256 vaultId = _createSplitVault(amount);
+        _warpPastLapse();
+
+        trustDrop.settle(vaultId);
+
+        vm.prank(alice);
+        trustDrop.claimShare(vaultId);
+
+        vm.prank(bob);
+        trustDrop.claimShare(vaultId);
+
+        assertEq(usdc.balanceOf(alice), 600e6);
+        assertEq(usdc.balanceOf(bob),   400e6);
+        assertEq(usdc.balanceOf(address(trustDrop)), 0);
+    }
+
+    function test_ClaimShare_ThreeBeneficiariesLastGetsRemainder() public {
         uint256 amount  = 1_000e6;
 
         address[] memory bens = new address[](3);
@@ -270,30 +318,44 @@ contract TrustDropDeployTest is TrustDropTestBase {
         usdc.mint(owner, amount);
         vm.prank(owner);
         usdc.approve(address(trustDrop), amount);
-
         vm.prank(owner);
         uint256 vaultId = trustDrop.createVault(PQ_PK, INTERVAL, GRACE, bens, shs);
 
         _warpPastLapse();
-        trustDrop.claim(vaultId);
+        trustDrop.settle(vaultId);
 
-        uint256 alicePayout = (amount * 3334) / BPS;             // 333_400_000
-        uint256 bobPayout   = (amount * 3333) / BPS;             // 333_300_000
-        uint256 carolPayout = amount - alicePayout - bobPayout;  // remainder
+        uint256 alicePayout = (amount * 3334) / BPS;
+        uint256 bobPayout   = (amount * 3333) / BPS;
+        uint256 carolPayout = amount - alicePayout - bobPayout;
+
+        vm.prank(alice); trustDrop.claimShare(vaultId);
+        vm.prank(bob);   trustDrop.claimShare(vaultId);
+        vm.prank(carol); trustDrop.claimShare(vaultId);
 
         assertEq(usdc.balanceOf(alice), alicePayout);
         assertEq(usdc.balanceOf(bob),   bobPayout);
         assertEq(usdc.balanceOf(carol), carolPayout);
-        // conservation: no dust lost
         assertEq(alicePayout + bobPayout + carolPayout, amount);
     }
 
-    function test_Claim_ZeroBalanceVaultDoesNotRevert() public {
+    function test_Settle_ZeroBalanceVaultSucceeds() public {
         uint256 vaultId = _createSimpleVault(0);
         _warpPastLapse();
-        // Should succeed with zero payout
-        trustDrop.claim(vaultId);
-        assertEq(usdc.balanceOf(alice), 0);
+        trustDrop.settle(vaultId);
+        // pendingClaims is 0; claimShare should revert NothingToClaim
+        assertEq(trustDrop.pendingClaims(vaultId, alice), 0);
+    }
+
+    function test_Settle_AnyoneCanSettle() public {
+        uint256 vaultId = _createSimpleVault(500e6);
+        _warpPastLapse();
+
+        // stranger (not the owner) can trigger settle
+        vm.prank(stranger);
+        trustDrop.settle(vaultId);
+
+        (,,,, , bool settled) = trustDrop.vaultStatus(vaultId);
+        assertTrue(settled);
     }
 
     // ── withdraw ─────────────────────────────────────────────────────────────

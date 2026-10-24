@@ -35,6 +35,7 @@ contract TrustDrop is ReentrancyGuard {
     error InvalidPQSignature();
     error InvalidECDSASignature();
     error PQVerifierUnavailable();
+    error NothingToClaim();
 
     event VaultCreated(
         uint256 indexed vaultId,
@@ -44,8 +45,11 @@ contract TrustDrop is ReentrancyGuard {
         uint256 graceWindow
     );
     event CheckedIn(uint256 indexed vaultId, uint256 indexed nonce, uint256 timestamp);
+    event Settled(uint256 indexed vaultId);
+    event ShareClaimed(uint256 indexed vaultId, address indexed beneficiary, uint256 amount);
     event Claimed(uint256 indexed vaultId, address indexed claimedBy, uint256 totalAmount);
     event Withdrawn(uint256 indexed vaultId, address indexed owner, uint256 amount);
+    event WithdrawnECDSA(uint256 indexed vaultId, address indexed owner, uint256 amount);
     event Deposited(uint256 indexed vaultId, uint256 amount);
 
     struct Vault {
@@ -63,6 +67,7 @@ contract TrustDrop is ReentrancyGuard {
 
     uint256 public nextVaultId = 1;
     mapping(uint256 vaultId => Vault vault) private _vaults;
+    mapping(uint256 vaultId => mapping(address beneficiary => uint256 amount)) public pendingClaims;
 
     function createVault(
         bytes32 pqPublicKey,
@@ -165,7 +170,7 @@ contract TrustDrop is ReentrancyGuard {
         return block.timestamp > lapseDeadline;
     }
 
-    function claim(uint256 vaultId) external nonReentrant {
+    function settle(uint256 vaultId) external {
         Vault storage vault = _getVault(vaultId);
         if (vault.settled) revert AlreadySettled();
         if (!isLapsed(vaultId)) revert NotLapsed();
@@ -184,11 +189,21 @@ contract TrustDrop is ReentrancyGuard {
 
             distributed += payout;
             if (payout > 0) {
-                USDC.safeTransfer(vault.beneficiaries[i], payout);
+                pendingClaims[vaultId][vault.beneficiaries[i]] += payout;
             }
         }
 
-        emit Claimed(vaultId, msg.sender, totalAmount);
+        emit Settled(vaultId);
+    }
+
+    function claimShare(uint256 vaultId) external nonReentrant {
+        uint256 amount = pendingClaims[vaultId][msg.sender];
+        if (amount == 0) revert NothingToClaim();
+
+        pendingClaims[vaultId][msg.sender] = 0;
+        USDC.safeTransfer(msg.sender, amount);
+
+        emit ShareClaimed(vaultId, msg.sender, amount);
     }
 
     function withdraw(uint256 vaultId, uint256 deadline, bytes calldata pqSignature) external nonReentrant {
@@ -211,6 +226,34 @@ contract TrustDrop is ReentrancyGuard {
         }
 
         emit Withdrawn(vaultId, vault.owner, amount);
+    }
+
+    function withdrawECDSA(uint256 vaultId, uint256 deadline, bytes calldata ecdsaSignature) external nonReentrant {
+        Vault storage vault = _getVault(vaultId);
+        if (msg.sender != vault.owner) revert NotOwner();
+        if (vault.settled) revert AlreadySettled();
+        if (isLapsed(vaultId)) revert VaultLapsed();
+        if (deadline < block.timestamp) revert DeadlineExpired();
+
+        uint256 currentNonce = vault.nonce;
+        bytes32 digest = keccak256(
+            abi.encode("TRUSTDROP_WITHDRAW_ECDSA_V1", vaultId, currentNonce, deadline, block.chainid)
+        );
+        bytes32 messageHash = MessageHashUtils.toEthSignedMessageHash(digest);
+        address signer = ECDSA.recover(messageHash, ecdsaSignature);
+        if (signer != vault.owner) revert InvalidECDSASignature();
+
+        vault.nonce = currentNonce + 1;
+        vault.settled = true;
+
+        uint256 amount = vault.totalDeposited;
+        vault.totalDeposited = 0;
+
+        if (amount > 0) {
+            USDC.safeTransfer(vault.owner, amount);
+        }
+
+        emit WithdrawnECDSA(vaultId, vault.owner, amount);
     }
 
     function vaultStatus(

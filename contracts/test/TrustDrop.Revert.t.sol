@@ -92,7 +92,7 @@ contract TrustDropRevertTest is TrustDropTestBase {
     function test_Deposit_RevertsAlreadySettled() public {
         uint256 vaultId = _createSimpleVault(100e6);
         _warpPastLapse();
-        trustDrop.claim(vaultId);
+        trustDrop.settle(vaultId);
 
         usdc.mint(owner, 50e6);
         vm.prank(owner);
@@ -122,7 +122,7 @@ contract TrustDropRevertTest is TrustDropTestBase {
     function test_CheckIn_RevertsAlreadySettled() public {
         uint256 vaultId = _createSimpleVault(100e6);
         _warpPastLapse();
-        trustDrop.claim(vaultId);
+        trustDrop.settle(vaultId);
 
         vm.prank(owner);
         vm.expectRevert(TrustDrop.AlreadySettled.selector);
@@ -179,27 +179,55 @@ contract TrustDropRevertTest is TrustDropTestBase {
         trustDrop.checkIn(vaultId, _deadline(), validSig);
     }
 
-    // ── claim reverts ─────────────────────────────────────────────────────────
+    // ── settle reverts ────────────────────────────────────────────────────────
 
-    function test_Claim_RevertsVaultNotFound() public {
+    function test_Settle_RevertsVaultNotFound() public {
         vm.expectRevert(TrustDrop.VaultNotFound.selector);
-        trustDrop.claim(999);
+        trustDrop.settle(999);
     }
 
-    function test_Claim_RevertsNotLapsed() public {
+    function test_Settle_RevertsNotLapsed() public {
         uint256 vaultId = _createSimpleVault(100e6);
 
         vm.expectRevert(TrustDrop.NotLapsed.selector);
-        trustDrop.claim(vaultId);
+        trustDrop.settle(vaultId);
     }
 
-    function test_Claim_RevertsAlreadySettled() public {
+    function test_Settle_RevertsAlreadySettled() public {
         uint256 vaultId = _createSimpleVault(100e6);
         _warpPastLapse();
-        trustDrop.claim(vaultId);
+        trustDrop.settle(vaultId);
 
         vm.expectRevert(TrustDrop.AlreadySettled.selector);
-        trustDrop.claim(vaultId);
+        trustDrop.settle(vaultId);
+    }
+
+    // ── claimShare reverts ────────────────────────────────────────────────────
+
+    function test_ClaimShare_RevertsNothingToClaim() public {
+        uint256 vaultId = _createSimpleVault(100e6);
+        _warpPastLapse();
+        trustDrop.settle(vaultId);
+
+        // stranger has no pending claim
+        vm.prank(stranger);
+        vm.expectRevert(TrustDrop.NothingToClaim.selector);
+        trustDrop.claimShare(vaultId);
+    }
+
+    function test_ClaimShare_RevertsDoubleClaimAfterFirst() public {
+        uint256 vaultId = _createSimpleVault(100e6);
+        _warpPastLapse();
+        trustDrop.settle(vaultId);
+
+        // First claim succeeds
+        vm.prank(alice);
+        trustDrop.claimShare(vaultId);
+
+        // Second claim on the same vault must revert
+        vm.prank(alice);
+        vm.expectRevert(TrustDrop.NothingToClaim.selector);
+        trustDrop.claimShare(vaultId);
     }
 
     // ── withdraw reverts ──────────────────────────────────────────────────────

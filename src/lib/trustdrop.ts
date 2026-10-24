@@ -1,6 +1,6 @@
 // TrustDrop contract ABI and address constants.
-// Deployed on Arc Mainnet: 0x9A0f3a1d3c4212b1991Fb46b769Fe82C4b945d31 (v2, checkInECDSA + security fixes)
-// Previous mainnet deploy: 0x11526Cad05a63174392e7C7157929733eb5D8751 (v1)
+// Deployed on Arc Mainnet: 0xaA3ba9C55a5260cBf24bC15735aB9a03C573d7e7 (v3, withdrawECDSA + pull-based claim)
+// Previous: 0x9A0f3a1d3c4212b1991Fb46b769Fe82C4b945d31 (v2), 0x11526Cad05a63174392e7C7157929733eb5D8751 (v1)
 
 export const TRUSTDROP_ABI = [
   // Write functions
@@ -50,11 +50,39 @@ export const TRUSTDROP_ABI = [
     outputs: [],
   },
   {
-    name: 'claim',
+    name: 'settle',
     type: 'function',
     stateMutability: 'nonpayable',
     inputs: [{ name: 'vaultId', type: 'uint256' }],
     outputs: [],
+  },
+  {
+    name: 'claimShare',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [{ name: 'vaultId', type: 'uint256' }],
+    outputs: [],
+  },
+  {
+    name: 'withdrawECDSA',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'vaultId', type: 'uint256' },
+      { name: 'deadline', type: 'uint256' },
+      { name: 'ecdsaSignature', type: 'bytes' },
+    ],
+    outputs: [],
+  },
+  {
+    name: 'pendingClaims',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [
+      { name: 'vaultId', type: 'uint256' },
+      { name: 'beneficiary', type: 'address' },
+    ],
+    outputs: [{ name: '', type: 'uint256' }],
   },
   {
     name: 'withdraw',

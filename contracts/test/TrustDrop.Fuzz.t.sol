@@ -61,7 +61,7 @@ contract TrustDropFuzzTest is TrustDropTestBase {
     // ── Fuzz: share distribution ──────────────────────────────────────────────
 
     /// @dev Two-beneficiary split: shares must sum to BPS; payouts must sum to totalAmount.
-    function testFuzz_Claim_TwoBeneficiaryPayoutConservation(
+    function testFuzz_SettleClaimShare_TwoBeneficiaryPayoutConservation(
         uint16 share0Bps,
         uint128 totalAmount
     ) public {
@@ -85,7 +85,15 @@ contract TrustDropFuzzTest is TrustDropTestBase {
         uint256 vaultId = trustDrop.createVault(PQ_PK, INTERVAL, GRACE, bens, shs);
 
         _warpPastLapse();
-        trustDrop.claim(vaultId);
+        trustDrop.settle(vaultId);
+
+        // Only pull shares that are non-zero (floor-division can round alice's share to 0).
+        if (trustDrop.pendingClaims(vaultId, alice) > 0) {
+            vm.prank(alice); trustDrop.claimShare(vaultId);
+        }
+        if (trustDrop.pendingClaims(vaultId, bob) > 0) {
+            vm.prank(bob);   trustDrop.claimShare(vaultId);
+        }
 
         // Last beneficiary absorbs remainder — full conservation guaranteed.
         assertEq(
@@ -96,12 +104,15 @@ contract TrustDropFuzzTest is TrustDropTestBase {
     }
 
     /// @dev Single beneficiary always receives the entire balance.
-    function testFuzz_Claim_SingleBeneficiaryGetsAll(uint128 totalAmount) public {
+    function testFuzz_SettleClaimShare_SingleBeneficiaryGetsAll(uint128 totalAmount) public {
         uint256 amount  = bound(totalAmount, 1, 1_000_000e6);
         uint256 vaultId = _createSimpleVault(amount);
 
         _warpPastLapse();
-        trustDrop.claim(vaultId);
+        trustDrop.settle(vaultId);
+
+        vm.prank(alice);
+        trustDrop.claimShare(vaultId);
 
         assertEq(usdc.balanceOf(alice), amount);
     }

@@ -15,6 +15,7 @@ export function VaultCard({ vaultId, filterOwner, nowTs }: VaultCardProps) {
   const { address } = useAccount();
   const chainId = useChainId();
   const [checkInPending, setCheckInPending] = useState(false);
+  const [withdrawPending, setWithdrawPending] = useState(false);
 
   const { data: status, refetch } = useReadContract({
     address: TRUSTDROP_ADDRESS,
@@ -81,14 +82,74 @@ export function VaultCard({ vaultId, filterOwner, nowTs }: VaultCardProps) {
   const statusLabel = settled ? 'Settled' : lapsed ? 'Lapsed' : 'Active';
   const StatusIcon = settled || lapsed ? ShieldOff : ShieldCheck;
 
-  function handleClaim() {
+  function handleSettle() {
     writeContract(
-      { address: TRUSTDROP_ADDRESS, abi: TRUSTDROP_ABI, functionName: 'claim', args: [vaultId] },
+      { address: TRUSTDROP_ADDRESS, abi: TRUSTDROP_ABI, functionName: 'settle', args: [vaultId] },
       {
         onError: (e) => toast.error(e.message.slice(0, 80)),
-        onSuccess: () => toast.success('Claim submitted'),
+        onSuccess: () => toast.success('Vault settled. Beneficiaries can now claim their shares.'),
       }
     );
+  }
+
+  function handleClaimShare() {
+    writeContract(
+      { address: TRUSTDROP_ADDRESS, abi: TRUSTDROP_ABI, functionName: 'claimShare', args: [vaultId] },
+      {
+        onError: (e) => toast.error(e.message.slice(0, 80)),
+        onSuccess: () => { toast.success('Share claimed successfully.'); refetch(); },
+      }
+    );
+  }
+
+  async function handleWithdrawECDSA() {
+    setWithdrawPending(true);
+    try {
+      const deadline = BigInt(Math.floor(Date.now() / 1000) + 600);
+
+      // Read nonce from storage slot (same approach as checkIn)
+      const mappingSlot = 1n;
+      const slotBase = BigInt(
+        '0x' + Array.from(
+          toBytes(keccak256(encodeAbiParameters(
+            [{ type: 'uint256' }, { type: 'uint256' }],
+            [vaultId, mappingSlot]
+          )))
+        ).map(b => b.toString(16).padStart(2, '0')).join('')
+      );
+      const nonceSlot = slotBase + 9n;
+      const slotHex = '0x' + nonceSlot.toString(16).padStart(64, '0');
+      const rpcUrl = (import.meta.env.VITE_RPC_URL as string | undefined) ?? 'https://rpc.mainnet.arc.io';
+      const slotRes = await fetch(rpcUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'eth_getStorageAt', params: [TRUSTDROP_ADDRESS, slotHex, 'latest'] })
+      });
+      const slotData = await slotRes.json() as { result: string };
+      const currentNonce = BigInt(slotData.result ?? '0x0');
+
+      const encoded = encodeAbiParameters(
+        [{ type: 'string' }, { type: 'uint256' }, { type: 'uint256' }, { type: 'uint256' }, { type: 'uint256' }],
+        ['TRUSTDROP_WITHDRAW_ECDSA_V1', vaultId, currentNonce, deadline, BigInt(chainId)]
+      );
+      const digest = keccak256(encoded);
+      const sig = await signMessageAsync({ message: { raw: digest } });
+
+      await writeContractAsync({
+        address: TRUSTDROP_ADDRESS,
+        abi: TRUSTDROP_ABI,
+        functionName: 'withdrawECDSA',
+        args: [vaultId, deadline, sig],
+      });
+
+      toast.success('Withdrawal successful. USDC returned to your wallet.');
+      refetch();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast.error(msg.slice(0, 100));
+    } finally {
+      setWithdrawPending(false);
+    }
   }
 
   async function handleCheckIn() {
@@ -324,11 +385,22 @@ export function VaultCard({ vaultId, filterOwner, nowTs }: VaultCardProps) {
             <RefreshCw size={14} className={checkInPending ? 'animate-spin' : ''} />
             {checkInPending ? 'Sign in wallet...' : 'Check in with wallet'}
           </button>
-          {/* Withdraw note */}
-          <div className="rounded-xl p-3 text-xs flex items-start gap-2" style={{ background: 'rgba(248,113,113,0.05)', border: '1px solid rgba(248,113,113,0.15)', color: 'rgba(248,113,113,0.7)', lineHeight: 1.6 }}>
-            <ArrowUpCircle size={12} style={{ marginTop: 1, flexShrink: 0 }} />
-            <span>To cancel and withdraw your USDC, use your SLH-DSA key to sign and call <span className="mono">withdraw()</span> directly on the contract.</span>
-          </div>
+          {/* Withdraw with wallet button */}
+          <button
+            onClick={() => { void handleWithdrawECDSA(); }}
+            disabled={withdrawPending}
+            className="w-full py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            style={{
+              background: 'rgba(248,113,113,0.08)',
+              border: '1px solid rgba(248,113,113,0.20)',
+              color: 'var(--danger)',
+            }}
+            onMouseEnter={(e) => { if (!withdrawPending) (e.currentTarget).style.background = 'rgba(248,113,113,0.16)'; }}
+            onMouseLeave={(e) => { (e.currentTarget).style.background = 'rgba(248,113,113,0.08)'; }}
+          >
+            <ArrowUpCircle size={14} className={withdrawPending ? 'animate-spin' : ''} />
+            {withdrawPending ? 'Sign in wallet...' : 'Withdraw with wallet'}
+          </button>
         </div>
       )}
 
@@ -353,23 +425,40 @@ export function VaultCard({ vaultId, filterOwner, nowTs }: VaultCardProps) {
         </p>
       )}
 
-      {/* Claim button (beneficiary) */}
+      {/* Lapsed: settle + claimShare buttons */}
       {lapsed && !settled && (
-        <button
-          onClick={handleClaim}
-          disabled={isPending || isConfirming}
-          className="w-full py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-          style={{
-            background: 'rgba(248,113,113,0.15)',
-            border: '1px solid rgba(248,113,113,0.30)',
-            color: 'var(--danger)',
-          }}
-          onMouseEnter={(e) => ((e.currentTarget).style.background = 'rgba(248,113,113,0.25)')}
-          onMouseLeave={(e) => ((e.currentTarget).style.background = 'rgba(248,113,113,0.15)')}
-        >
-          <ArrowDownCircle size={15} />
-          {isPending || isConfirming ? 'Claiming…' : 'Claim funds'}
-        </button>
+        <div className="space-y-2">
+          <button
+            onClick={handleSettle}
+            disabled={isPending || isConfirming}
+            className="w-full py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            style={{
+              background: 'rgba(248,113,113,0.10)',
+              border: '1px solid rgba(248,113,113,0.25)',
+              color: 'var(--danger)',
+            }}
+            onMouseEnter={(e) => ((e.currentTarget).style.background = 'rgba(248,113,113,0.20)')}
+            onMouseLeave={(e) => ((e.currentTarget).style.background = 'rgba(248,113,113,0.10)')}
+          >
+            <ShieldOff size={14} />
+            {isPending || isConfirming ? 'Processing...' : 'Settle vault (step 1)'}
+          </button>
+          <button
+            onClick={handleClaimShare}
+            disabled={isPending || isConfirming}
+            className="w-full py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            style={{
+              background: 'rgba(248,113,113,0.15)',
+              border: '1px solid rgba(248,113,113,0.30)',
+              color: 'var(--danger)',
+            }}
+            onMouseEnter={(e) => ((e.currentTarget).style.background = 'rgba(248,113,113,0.25)')}
+            onMouseLeave={(e) => ((e.currentTarget).style.background = 'rgba(248,113,113,0.15)')}
+          >
+            <ArrowDownCircle size={14} />
+            {isPending || isConfirming ? 'Claiming...' : 'Claim my share (step 2)'}
+          </button>
+        </div>
       )}
     </div>
   );

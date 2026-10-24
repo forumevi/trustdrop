@@ -150,9 +150,9 @@ contract TrustDropCheckInECDSATest is TrustDropTestBase {
     function test_CheckInECDSA_RevertsAlreadySettled() public {
         uint256 vaultId = _createECVault(100e6);
         _warpPastLapse();
-        // Anyone can claim to settle
+        // Anyone can settle to mark vault settled
         vm.prank(stranger);
-        trustDrop.claim(vaultId);
+        trustDrop.settle(vaultId);
 
         uint256 dl  = _deadline();
         bytes memory sig = _signCheckIn(vaultId, 0, dl, ownerKey);
@@ -450,5 +450,312 @@ contract TrustDropCheckInECDSATest is TrustDropTestBase {
         vm.prank(ecOwner);
         vm.expectRevert(TrustDrop.InvalidECDSASignature.selector);
         trustDrop.checkInECDSA(vaultId, dl, sig);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // withdrawECDSA helpers
+    // ──────────────────────────────────────────────────────────────────────────
+
+    /// @dev Build a valid EIP-191 signature for withdrawECDSA.
+    function _signWithdraw(
+        uint256 vaultId,
+        uint256 nonce,
+        uint256 deadline,
+        uint256 signerKey
+    ) internal view returns (bytes memory sig) {
+        bytes32 digest = keccak256(
+            abi.encode("TRUSTDROP_WITHDRAW_ECDSA_V1", vaultId, nonce, deadline, block.chainid)
+        );
+        bytes32 messageHash = MessageHashUtils.toEthSignedMessageHash(digest);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerKey, messageHash);
+        sig = abi.encodePacked(r, s, v);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Happy-path: withdrawECDSA
+    // ──────────────────────────────────────────────────────────────────────────
+
+    function test_WithdrawECDSA_OwnerReceivesFullBalance() public {
+        uint256 amount  = 2_000e6;
+        uint256 vaultId = _createECVault(amount);
+
+        uint256 dl  = _deadline();
+        bytes memory sig = _signWithdraw(vaultId, 0, dl, ownerKey);
+
+        vm.prank(ecOwner);
+        vm.expectEmit(true, true, false, true, address(trustDrop));
+        emit TrustDrop.WithdrawnECDSA(vaultId, ecOwner, amount);
+        trustDrop.withdrawECDSA(vaultId, dl, sig);
+
+        assertEq(usdc.balanceOf(ecOwner), amount);
+        assertEq(usdc.balanceOf(address(trustDrop)), 0);
+    }
+
+    function test_WithdrawECDSA_MarksSettled() public {
+        uint256 vaultId = _createECVault(500e6);
+
+        uint256 dl  = _deadline();
+        bytes memory sig = _signWithdraw(vaultId, 0, dl, ownerKey);
+
+        vm.prank(ecOwner);
+        trustDrop.withdrawECDSA(vaultId, dl, sig);
+
+        (,,,, , bool settled) = trustDrop.vaultStatus(vaultId);
+        assertTrue(settled);
+    }
+
+    function test_WithdrawECDSA_ZerosVaultBalance() public {
+        uint256 vaultId = _createECVault(500e6);
+
+        uint256 dl  = _deadline();
+        bytes memory sig = _signWithdraw(vaultId, 0, dl, ownerKey);
+
+        vm.prank(ecOwner);
+        trustDrop.withdrawECDSA(vaultId, dl, sig);
+
+        (, uint256 bal,,,, ) = trustDrop.vaultStatus(vaultId);
+        assertEq(bal, 0);
+    }
+
+    function test_WithdrawECDSA_IncrementsNonce() public {
+        // After withdrawECDSA, nonce should be 1 (reflected by signing with nonce=0)
+        // We verify indirectly: a second withdrawECDSA signed with old nonce=0 must fail.
+        uint256 vaultId = _createECVault(0);
+
+        uint256 dl  = _deadline();
+        bytes memory sig0 = _signWithdraw(vaultId, 0, dl, ownerKey);
+
+        vm.prank(ecOwner);
+        trustDrop.withdrawECDSA(vaultId, dl, sig0);
+
+        // Vault is now settled; a second call must revert AlreadySettled, confirming
+        // the function ran to completion (nonce was incremented before settled was set).
+        bytes memory sig1 = _signWithdraw(vaultId, 1, dl, ownerKey);
+        vm.prank(ecOwner);
+        vm.expectRevert(TrustDrop.AlreadySettled.selector);
+        trustDrop.withdrawECDSA(vaultId, dl, sig1);
+    }
+
+    function test_WithdrawECDSA_ZeroBalanceDoesNotRevert() public {
+        uint256 vaultId = _createECVault(0);
+
+        uint256 dl  = _deadline();
+        bytes memory sig = _signWithdraw(vaultId, 0, dl, ownerKey);
+
+        // Should not revert even with zero balance
+        vm.prank(ecOwner);
+        trustDrop.withdrawECDSA(vaultId, dl, sig);
+
+        assertEq(usdc.balanceOf(ecOwner), 0);
+    }
+
+    function test_WithdrawECDSA_DeadlineExactlyNow() public {
+        // Contract guard is `deadline < block.timestamp` — equality should NOT revert.
+        uint256 vaultId = _createECVault(0);
+        uint256 dl      = block.timestamp;
+        bytes memory sig = _signWithdraw(vaultId, 0, dl, ownerKey);
+
+        vm.prank(ecOwner);
+        trustDrop.withdrawECDSA(vaultId, dl, sig); // must not revert
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Revert: withdrawECDSA — NotOwner
+    // ──────────────────────────────────────────────────────────────────────────
+
+    function test_WithdrawECDSA_RevertsNotOwner() public {
+        uint256 vaultId = _createECVault(0);
+        uint256 dl      = _deadline();
+        bytes memory sig = _signWithdraw(vaultId, 0, dl, ownerKey);
+
+        // stranger is not the vault owner
+        vm.prank(stranger);
+        vm.expectRevert(TrustDrop.NotOwner.selector);
+        trustDrop.withdrawECDSA(vaultId, dl, sig);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Revert: withdrawECDSA — AlreadySettled
+    // ──────────────────────────────────────────────────────────────────────────
+
+    function test_WithdrawECDSA_RevertsAlreadySettled() public {
+        uint256 vaultId = _createECVault(500e6);
+
+        uint256 dl  = _deadline();
+        bytes memory sig0 = _signWithdraw(vaultId, 0, dl, ownerKey);
+
+        // First withdraw settles the vault
+        vm.prank(ecOwner);
+        trustDrop.withdrawECDSA(vaultId, dl, sig0);
+
+        // Second attempt with nonce=1 must revert AlreadySettled (not InvalidECDSASignature)
+        bytes memory sig1 = _signWithdraw(vaultId, 1, dl, ownerKey);
+        vm.prank(ecOwner);
+        vm.expectRevert(TrustDrop.AlreadySettled.selector);
+        trustDrop.withdrawECDSA(vaultId, dl, sig1);
+    }
+
+    function test_WithdrawECDSA_RevertsAlreadySettledViaSettle() public {
+        uint256 vaultId = _createECVault(100e6);
+        _warpPastLapse();
+        trustDrop.settle(vaultId);
+
+        // Warp back to non-lapsed — but vault is already settled
+        // (We don't warp back; just confirm the settled flag blocks withdrawECDSA.)
+        uint256 dl  = _deadline();
+        bytes memory sig = _signWithdraw(vaultId, 0, dl, ownerKey);
+
+        vm.prank(ecOwner);
+        vm.expectRevert(TrustDrop.AlreadySettled.selector);
+        trustDrop.withdrawECDSA(vaultId, dl, sig);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Revert: withdrawECDSA — VaultLapsed
+    // ──────────────────────────────────────────────────────────────────────────
+
+    function test_WithdrawECDSA_RevertsVaultLapsed() public {
+        uint256 vaultId = _createECVault(0);
+        _warpPastLapse();
+
+        assertTrue(trustDrop.isLapsed(vaultId), "precondition: vault must be lapsed");
+
+        uint256 dl  = _deadline();
+        bytes memory sig = _signWithdraw(vaultId, 0, dl, ownerKey);
+
+        vm.prank(ecOwner);
+        vm.expectRevert(TrustDrop.VaultLapsed.selector);
+        trustDrop.withdrawECDSA(vaultId, dl, sig);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Revert: withdrawECDSA — DeadlineExpired
+    // ──────────────────────────────────────────────────────────────────────────
+
+    function test_WithdrawECDSA_RevertsDeadlineExpired() public {
+        uint256 vaultId    = _createECVault(0);
+        uint256 pastDeadline = block.timestamp - 1;
+        bytes memory sig   = _signWithdraw(vaultId, 0, pastDeadline, ownerKey);
+
+        vm.prank(ecOwner);
+        vm.expectRevert(TrustDrop.DeadlineExpired.selector);
+        trustDrop.withdrawECDSA(vaultId, pastDeadline, sig);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Revert: withdrawECDSA — InvalidECDSASignature
+    // ──────────────────────────────────────────────────────────────────────────
+
+    function test_WithdrawECDSA_RevertsWrongSigner() public {
+        uint256 vaultId = _createECVault(0);
+        uint256 dl      = _deadline();
+
+        (, uint256 strangerKey) = makeAddrAndKey("stranger");
+        bytes memory sig = _signWithdraw(vaultId, 0, dl, strangerKey);
+
+        vm.prank(ecOwner);
+        vm.expectRevert(TrustDrop.InvalidECDSASignature.selector);
+        trustDrop.withdrawECDSA(vaultId, dl, sig);
+    }
+
+    function test_WithdrawECDSA_RevertsWrongNonce() public {
+        uint256 vaultId = _createECVault(0);
+        uint256 dl      = _deadline();
+
+        // Sign with nonce=1 instead of the current nonce=0
+        bytes memory sig = _signWithdraw(vaultId, 1, dl, ownerKey);
+
+        vm.prank(ecOwner);
+        vm.expectRevert(TrustDrop.InvalidECDSASignature.selector);
+        trustDrop.withdrawECDSA(vaultId, dl, sig);
+    }
+
+    function test_WithdrawECDSA_RevertsWrongVaultId() public {
+        uint256 vaultId = _createECVault(0);
+        uint256 dl      = _deadline();
+
+        // Sign for a different vaultId
+        bytes memory sig = _signWithdraw(vaultId + 1, 0, dl, ownerKey);
+
+        vm.prank(ecOwner);
+        vm.expectRevert(TrustDrop.InvalidECDSASignature.selector);
+        trustDrop.withdrawECDSA(vaultId, dl, sig);
+    }
+
+    function test_WithdrawECDSA_RevertsWrongChainId() public {
+        uint256 vaultId = _createECVault(0);
+        uint256 dl      = _deadline();
+
+        bytes32 badDigest = keccak256(
+            abi.encode("TRUSTDROP_WITHDRAW_ECDSA_V1", vaultId, uint256(0), dl, block.chainid + 1)
+        );
+        bytes32 badMessageHash = MessageHashUtils.toEthSignedMessageHash(badDigest);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(ownerKey, badMessageHash);
+        bytes memory sig = abi.encodePacked(r, s, v);
+
+        vm.prank(ecOwner);
+        vm.expectRevert(TrustDrop.InvalidECDSASignature.selector);
+        trustDrop.withdrawECDSA(vaultId, dl, sig);
+    }
+
+    function test_WithdrawECDSA_RevertsSignatureReplay() public {
+        // Use checkInECDSA sig format for the withdraw — different domain tag
+        uint256 vaultId = _createECVault(0);
+        uint256 dl      = _deadline();
+
+        // A checkIn signature (wrong domain) used for withdraw
+        bytes memory checkInSig = _signCheckIn(vaultId, 0, dl, ownerKey);
+
+        vm.prank(ecOwner);
+        vm.expectRevert(TrustDrop.InvalidECDSASignature.selector);
+        trustDrop.withdrawECDSA(vaultId, dl, checkInSig);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // Fuzz: withdrawECDSA accepts any future deadline; rejects past deadlines
+    // ──────────────────────────────────────────────────────────────────────────
+
+    function testFuzz_WithdrawECDSA_AcceptsFutureDeadline(uint32 offset) public {
+        uint256 vaultId = _createECVault(0);
+        uint256 future  = block.timestamp + bound(offset, 1, 365 days);
+        bytes memory sig = _signWithdraw(vaultId, 0, future, ownerKey);
+
+        vm.prank(ecOwner);
+        trustDrop.withdrawECDSA(vaultId, future, sig);
+
+        (,,,, , bool settled) = trustDrop.vaultStatus(vaultId);
+        assertTrue(settled);
+    }
+
+    function testFuzz_WithdrawECDSA_RejectsStaleDeadline(uint32 age) public {
+        uint256 vaultId      = _createECVault(0);
+        uint256 pastDeadline = block.timestamp - bound(age, 1, block.timestamp);
+        bytes memory sig     = _signWithdraw(vaultId, 0, pastDeadline, ownerKey);
+
+        vm.prank(ecOwner);
+        vm.expectRevert(TrustDrop.DeadlineExpired.selector);
+        trustDrop.withdrawECDSA(vaultId, pastDeadline, sig);
+    }
+
+    function testFuzz_WithdrawECDSA_WrongKeyAlwaysReverts(uint256 badKey) public {
+        uint256 curveOrder = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141;
+        badKey = bound(badKey, 1, curveOrder - 1);
+        vm.assume(badKey != ownerKey);
+
+        uint256 vaultId = _createECVault(0);
+        uint256 dl      = _deadline();
+        bytes memory sig = _signWithdraw(vaultId, 0, dl, badKey);
+
+        address recovered = ECDSA.recover(
+            MessageHashUtils.toEthSignedMessageHash(
+                keccak256(abi.encode("TRUSTDROP_WITHDRAW_ECDSA_V1", vaultId, uint256(0), dl, block.chainid))
+            ),
+            sig
+        );
+        vm.assume(recovered != ecOwner);
+
+        vm.prank(ecOwner);
+        vm.expectRevert(TrustDrop.InvalidECDSASignature.selector);
+        trustDrop.withdrawECDSA(vaultId, dl, sig);
     }
 }
