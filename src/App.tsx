@@ -265,8 +265,8 @@ export default function App() {
         {/* Stats strip */}
         <div className="fade-up delay-4" style={{ display: 'flex', gap: 48, flexWrap: 'wrap', paddingTop: '2rem', borderTop: '1px solid var(--border)' }}>
           {[
-            { label: 'Contract',      value: <span className="mono" style={{ fontSize: '0.88rem' }}>0x9A0f…5d31</span> },
-            { label: 'Foundry tests', value: <><Counter to={92} />+</> },
+            { label: 'Contract',      value: <span className="mono" style={{ fontSize: '0.88rem' }}>0xaA3b…d7e7</span> },
+            { label: 'Foundry tests', value: <><Counter to={118} />+</> },
             { label: 'Gas / check-in', value: <><span style={{ fontSize: '1rem' }}>~</span><Counter to={85} suffix="k" /></> },
             { label: 'Chain',         value: <span style={{ color: 'var(--success)' }}>5042</span> },
             { label: 'USDC gas',      value: <span style={{ color: 'var(--accent)' }}>native</span> },
@@ -369,10 +369,10 @@ export default function App() {
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 14 }}>
           {[
-            { title: 'Unaudited',            body: '67 Foundry tests are not an audit. Do not deposit more than you can lose.' },
+            { title: 'Unaudited',            body: '118 Foundry tests are not an audit. Do not deposit more than you can lose.' },
             { title: 'Key loss is permanent', body: 'Lose your SLH-DSA key and the vault is frozen forever. No recovery, no escape hatch.' },
             { title: 'USDC denylist',         body: "Circle's denylist still applies. This does not protect against Circle blocking your address." },
-            { title: 'Sig size 7,856 bytes',  body: 'Signing takes seconds, not milliseconds. Factor this into your UX.' },
+            { title: 'SLH-DSA optional',  body: 'MetaMask check-in and withdraw work today. SLH-DSA paths require an offline signing tool not yet released.' },
           ].map(l => (
             <div key={l.title} style={{
               background: 'rgba(248,113,113,0.04)',
