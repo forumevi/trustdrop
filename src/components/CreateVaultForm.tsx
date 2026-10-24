@@ -51,7 +51,7 @@ export function CreateVaultForm({ onCreated }: Props) {
   const [interval, setInterval] = useState(INTERVAL_OPTIONS[1].value);
   const [grace, setGrace] = useState(GRACE_OPTIONS[1].value);
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([{ address: '', share: '100' }]);
-  const [step, setStep] = useState<'idle' | 'approving' | 'creating'>('idle');
+  const [step, setStep] = useState<'idle' | 'approving' | 'creating' | 'done'>('idle');
 
   const { data: allowance } = useReadContract({
     address: USDC_ADDRESS,
@@ -70,9 +70,8 @@ export function CreateVaultForm({ onCreated }: Props) {
   // After create confirms, show success
   useEffect(() => {
     if (!createSuccess) return;
-    toast.success('Vault created.');
+    setStep('done');
     onCreated();
-    setStep('idle');
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [createSuccess]);
 
@@ -154,6 +153,39 @@ export function CreateVaultForm({ onCreated }: Props) {
 
   const busy = isPending;
   const sharesOk = totalShares() === 100;
+
+  if (step === 'done') {
+    return (
+      <div className="flex flex-col items-center justify-center py-10 gap-6 text-center">
+        <div style={{
+          width: 64, height: 64, borderRadius: '50%',
+          background: 'rgba(74,222,128,0.12)',
+          border: '1px solid rgba(74,222,128,0.3)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '1.8rem',
+        }}>
+          ✓
+        </div>
+        <div>
+          <p className="text-lg font-bold" style={{ color: 'var(--ink)' }}>Vault created.</p>
+          <p className="text-sm mt-1" style={{ color: 'var(--subtle)' }}>
+            Your USDC is locked. Check in before the deadline to keep it alive.
+          </p>
+        </div>
+        <button
+          onClick={() => setStep('idle')}
+          className="px-6 py-3 rounded-xl text-sm font-semibold"
+          style={{
+            background: 'rgba(132,184,232,0.1)',
+            border: '1px solid rgba(132,184,232,0.2)',
+            color: 'var(--accent)',
+          }}
+        >
+          Create another vault
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">

@@ -1,6 +1,6 @@
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useAccount } from 'wagmi';
 import { formatUnits } from 'viem';
-import { ShieldCheck, ShieldOff, Clock, LogIn, ArrowDownCircle } from 'lucide-react';
+import { ShieldCheck, ShieldOff, Clock, LogIn, ArrowDownCircle, RefreshCw, ArrowUpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { TRUSTDROP_ABI, TRUSTDROP_ADDRESS, formatTs, formatCountdown } from '@/lib/trustdrop';
 
@@ -63,6 +63,8 @@ export function VaultCard({ vaultId }: VaultCardProps) {
       }
     );
   }
+
+
 
   return (
     <div
@@ -151,14 +153,32 @@ export function VaultCard({ vaultId }: VaultCardProps) {
         </div>
       )}
 
-      {/* Owner badge */}
-      {isOwner && !settled && (
-        <p className="text-xs flex items-center gap-1.5" style={{ color: 'var(--accent)', opacity: 0.8 }}>
-          <ShieldCheck size={11} /> You own this vault
+      {/* Owner actions */}
+      {isOwner && !settled && !lapsed && (
+        <div className="space-y-2">
+          {/* Check-in info */}
+          <div className="rounded-xl p-3 text-xs" style={{ background: 'rgba(132,184,232,0.05)', border: '1px solid rgba(132,184,232,0.12)', color: 'var(--subtle)', lineHeight: 1.6 }}>
+            <span className="flex items-center gap-1.5 mb-1" style={{ color: 'var(--accent)', fontWeight: 600 }}>
+              <RefreshCw size={11} /> How to check in
+            </span>
+            Check-in requires signing with your SLH-DSA private key offline, then submitting the signature here. Use a dedicated SLH-DSA signing tool and paste the result into the check-in form below.
+          </div>
+          {/* Withdraw note */}
+          <div className="rounded-xl p-3 text-xs flex items-start gap-2" style={{ background: 'rgba(248,113,113,0.05)', border: '1px solid rgba(248,113,113,0.15)', color: 'rgba(248,113,113,0.7)', lineHeight: 1.6 }}>
+            <ArrowUpCircle size={12} style={{ marginTop: 1, flexShrink: 0 }} />
+            <span>To cancel and withdraw, sign with your SLH-DSA key and call <span className="mono">withdraw()</span> directly. This proves you are alive and reclaims your funds in one step.</span>
+          </div>
+        </div>
+      )}
+
+      {/* Owner badge (settled) */}
+      {isOwner && settled && (
+        <p className="text-xs flex items-center gap-1.5" style={{ color: 'var(--subtle)' }}>
+          <ShieldCheck size={11} /> Vault settled
         </p>
       )}
 
-      {/* Claim button */}
+      {/* Claim button (beneficiary) */}
       {lapsed && !settled && (
         <button
           onClick={handleClaim}
