@@ -213,7 +213,7 @@ export function CreateVaultForm({ onCreated }: Props) {
               fontWeight: 600,
             }}
           >
-            Generate demo key
+            Generate random key
           </button>
         </div>
         <input
@@ -226,7 +226,7 @@ export function CreateVaultForm({ onCreated }: Props) {
           onBlur={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
         />
         <div className="mt-2 p-3 rounded-xl text-xs" style={{ background: 'rgba(132,184,232,0.05)', border: '1px solid rgba(132,184,232,0.12)', color: 'var(--subtle)', lineHeight: 1.6 }}>
-          <span style={{ color: 'var(--accent)', fontWeight: 600 }}>What is this?</span> Your EVM wallet can be stolen or hacked. SLH-DSA is a post-quantum key that lives offline, on a USB or paper. Only someone with that physical key can prove you are alive. Click <span style={{ color: 'var(--accent)' }}>Generate demo key</span> to try the flow with a random key, or use a real SLH-DSA tool for production.
+          <span style={{ color: 'var(--accent)', fontWeight: 600 }}>What is this?</span> Your EVM wallet can be stolen or hacked. SLH-DSA is a post-quantum key that lives offline, on a USB or paper. Only someone with that physical key can prove you are alive. Click <span style={{ color: 'var(--accent)' }}>Generate random key</span> to fill the field with a random 32-byte key, or paste your own SLH-DSA public key.
         </div>
       </div>
 
