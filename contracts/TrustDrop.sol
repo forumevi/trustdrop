@@ -4,6 +4,8 @@ pragma solidity ^0.8.28;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 interface IArcPQVerifier {
     function verifySlhDsaSha2128s(bytes32 publicKey, bytes memory message, bytes memory signature) external view returns (bool);
@@ -22,6 +24,7 @@ contract TrustDrop is ReentrancyGuard {
     error VaultNotFound();
     error NotOwner();
     error AlreadySettled();
+    error VaultLapsed();
     error NotLapsed();
     error StillLapsed();
     error InvalidShares();
@@ -30,6 +33,7 @@ contract TrustDrop is ReentrancyGuard {
     error ZeroAmount();
     error DeadlineExpired();
     error InvalidPQSignature();
+    error InvalidECDSASignature();
     error PQVerifierUnavailable();
 
     event VaultCreated(
@@ -69,10 +73,12 @@ contract TrustDrop is ReentrancyGuard {
     ) external returns (uint256 vaultId) {
         if (checkInInterval == 0) revert InvalidInterval();
         if (beneficiaries.length == 0 || beneficiaries.length != shares.length) revert InvalidBeneficiaries();
+        if (beneficiaries.length > 10) revert InvalidBeneficiaries();
 
         uint256 totalShares;
         uint256 length = shares.length;
         for (uint256 i = 0; i < length; ++i) {
+            if (beneficiaries[i] == address(0)) revert InvalidBeneficiaries();
             totalShares += shares[i];
         }
         if (totalShares != BPS_DENOMINATOR) revert InvalidShares();
@@ -119,9 +125,31 @@ contract TrustDrop is ReentrancyGuard {
         Vault storage vault = _getVault(vaultId);
         if (msg.sender != vault.owner) revert NotOwner();
         if (vault.settled) revert AlreadySettled();
+        if (isLapsed(vaultId)) revert VaultLapsed();
 
         uint256 currentNonce = vault.nonce;
         _validateProof(vault.pqPublicKey, "TRUSTDROP_CHECKIN_V1", vaultId, currentNonce, deadline, pqSignature);
+
+        vault.lastCheckIn = block.timestamp;
+        vault.nonce = currentNonce + 1;
+
+        emit CheckedIn(vaultId, currentNonce, block.timestamp);
+    }
+
+    function checkInECDSA(uint256 vaultId, uint256 deadline, bytes calldata ecdsaSignature) external {
+        Vault storage vault = _getVault(vaultId);
+        if (msg.sender != vault.owner) revert NotOwner();
+        if (vault.settled) revert AlreadySettled();
+        if (isLapsed(vaultId)) revert VaultLapsed();
+        if (deadline < block.timestamp) revert DeadlineExpired();
+
+        uint256 currentNonce = vault.nonce;
+        bytes32 digest = keccak256(
+            abi.encode("TRUSTDROP_CHECKIN_ECDSA_V1", vaultId, currentNonce, deadline, block.chainid)
+        );
+        bytes32 messageHash = MessageHashUtils.toEthSignedMessageHash(digest);
+        address signer = ECDSA.recover(messageHash, ecdsaSignature);
+        if (signer != vault.owner) revert InvalidECDSASignature();
 
         vault.lastCheckIn = block.timestamp;
         vault.nonce = currentNonce + 1;

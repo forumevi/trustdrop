@@ -38,6 +38,17 @@ export const TRUSTDROP_ABI = [
     outputs: [],
   },
   {
+    name: 'checkInECDSA',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'vaultId', type: 'uint256' },
+      { name: 'deadline', type: 'uint256' },
+      { name: 'ecdsaSignature', type: 'bytes' },
+    ],
+    outputs: [],
+  },
+  {
     name: 'claim',
     type: 'function',
     stateMutability: 'nonpayable',
