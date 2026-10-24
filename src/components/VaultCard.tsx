@@ -7,9 +7,11 @@ import { TRUSTDROP_ABI, TRUSTDROP_ADDRESS, formatTs, formatCountdown } from '@/l
 
 interface VaultCardProps {
   vaultId: bigint;
+  filterOwner?: string;
+  nowTs: number;
 }
 
-export function VaultCard({ vaultId }: VaultCardProps) {
+export function VaultCard({ vaultId, filterOwner, nowTs }: VaultCardProps) {
   const { address } = useAccount();
   const chainId = useChainId();
   const [checkInPending, setCheckInPending] = useState(false);
@@ -54,10 +56,21 @@ export function VaultCard({ vaultId }: VaultCardProps) {
   }
 
   const [owner, balance, lastCheckIn, nextDeadline, lapsed, settled] = status;
+
   const isOwner = address?.toLowerCase() === owner.toLowerCase();
   const balanceUsd = parseFloat(formatUnits(balance, 6)).toFixed(2);
   const nextDeadlineNum = Number(nextDeadline);
   const countdown = formatCountdown(nextDeadlineNum);
+
+  // Filter: if filterOwner set, only show vaults owned by that address
+  if (filterOwner && owner.toLowerCase() !== filterOwner.toLowerCase()) return null;
+
+  // Progress bar: uses nowTs passed from parent (updated every second)
+  const checkInNum = Number(lastCheckIn);
+  const windowLen = nextDeadlineNum - checkInNum;
+  const elapsed = nowTs - checkInNum;
+  const progress = windowLen > 0 ? Math.min(elapsed / windowLen, 1) : 1;
+  const progressColor = progress > 0.85 ? 'var(--danger)' : progress > 0.6 ? '#f5a623' : 'var(--success)';
 
   const statusColor = settled
     ? 'var(--subtle)'
@@ -196,13 +209,11 @@ export function VaultCard({ vaultId }: VaultCardProps) {
 
   return (
     <div
-      className="rounded-2xl p-5 space-y-4 transition-all"
+      className="vault-card-glow rounded-2xl p-5 space-y-4"
       style={{
         background: 'var(--surface)',
         border: `1px solid ${lapsed && !settled ? 'rgba(248,113,113,0.30)' : 'var(--border)'}`,
       }}
-      onMouseEnter={(e) => ((e.currentTarget).style.background = 'var(--surface-strong)')}
-      onMouseLeave={(e) => ((e.currentTarget).style.background = 'var(--surface)')}
     >
       {/* Header row */}
       <div className="flex items-center justify-between">
@@ -231,33 +242,46 @@ export function VaultCard({ vaultId }: VaultCardProps) {
 
       {/* Timeline */}
       {!settled && (
-        <div className="grid grid-cols-2 gap-2.5">
-          <div className="rounded-xl p-3" style={{ background: 'var(--surface-muted)' }}>
-            <p className="flex items-center gap-1 text-xs mb-1" style={{ color: 'var(--subtle)' }}>
-              <LogIn size={10} /> Last check-in
-            </p>
-            <p className="text-xs font-medium" style={{ color: 'var(--ink-2)' }}>
-              {formatTs(Number(lastCheckIn))}
-            </p>
-          </div>
-          <div
-            className="rounded-xl p-3"
-            style={{
-              background: lapsed ? 'rgba(248,113,113,0.08)' : 'var(--surface-muted)',
-              border: lapsed ? '1px solid rgba(248,113,113,0.25)' : 'none',
-            }}
-          >
-            <p className="flex items-center gap-1 text-xs mb-1" style={{ color: 'var(--subtle)' }}>
-              <Clock size={10} /> {lapsed ? 'Lapsed' : 'Next deadline'}
-            </p>
-            <p
-              className="text-xs font-semibold tabular-nums"
-              style={{ color: lapsed ? 'var(--danger)' : 'var(--ink-2)' }}
+        <>
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="rounded-xl p-3" style={{ background: 'var(--surface-muted)' }}>
+              <p className="flex items-center gap-1 text-xs mb-1" style={{ color: 'var(--subtle)' }}>
+                <LogIn size={10} /> Last check-in
+              </p>
+              <p className="text-xs font-medium" style={{ color: 'var(--ink-2)' }}>
+                {formatTs(Number(lastCheckIn))}
+              </p>
+            </div>
+            <div
+              className="rounded-xl p-3"
+              style={{
+                background: lapsed ? 'rgba(248,113,113,0.08)' : 'var(--surface-muted)',
+                border: lapsed ? '1px solid rgba(248,113,113,0.25)' : 'none',
+              }}
             >
-              {lapsed ? formatTs(nextDeadlineNum) : countdown}
-            </p>
+              <p className="flex items-center gap-1 text-xs mb-1" style={{ color: 'var(--subtle)' }}>
+                <Clock size={10} /> {lapsed ? 'Lapsed' : 'Next deadline'}
+              </p>
+              <p
+                className="text-xs font-semibold tabular-nums"
+                style={{ color: lapsed ? 'var(--danger)' : 'var(--ink-2)' }}
+              >
+                {lapsed ? formatTs(nextDeadlineNum) : countdown}
+              </p>
+            </div>
           </div>
-        </div>
+          {/* Deadline progress bar */}
+          <div style={{ height: 4, borderRadius: 99, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
+            <div style={{
+              height: '100%',
+              width: `${Math.round(progress * 100)}%`,
+              background: progressColor,
+              borderRadius: 99,
+              transition: 'width 1s linear',
+              boxShadow: `0 0 8px ${progressColor}66`,
+            }} />
+          </div>
+        </>
       )}
 
       {/* Beneficiaries */}

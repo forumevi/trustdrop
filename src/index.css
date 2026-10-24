@@ -143,6 +143,38 @@ body {
   box-shadow: none !important;
 }
 
+/* ── Vault card glow on hover ── */
+.vault-card-glow {
+  transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+}
+.vault-card-glow:hover {
+  box-shadow: 0 0 0 1px rgba(132,184,232,0.18), 0 8px 32px rgba(132,184,232,0.10);
+  transform: translateY(-2px);
+}
+
+/* ── Step number ring pulse ── */
+.step-ring {
+  animation: step-pulse 3s ease-in-out infinite;
+}
+@keyframes step-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(132,184,232,0.0); }
+  50%       { box-shadow: 0 0 0 8px rgba(132,184,232,0.10); }
+}
+
+/* ── Shimmer on stat values ── */
+.stat-shimmer {
+  background: linear-gradient(90deg, var(--ink) 0%, var(--accent) 50%, var(--ink) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
 /* ── Number input cleanup ── */
 input[type=number]::-webkit-outer-spin-button,
 input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }

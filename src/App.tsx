@@ -110,15 +110,15 @@ function Section({ children, id, style }: { children: React.ReactNode; id?: stri
    Main App
 ───────────────────────────────────────── */
 export default function App() {
-  const { isConnected } = useAccount()
+  const { isConnected, address } = useAccount()
   const [showCreate, setShowCreate] = useState(false)
-  const [tick, setTick] = useState(0)
+  const [vaultFilter, setVaultFilter] = useState<'all' | 'mine'>('all')
+  const [nowTs, setNowTs] = useState(() => Math.floor(Date.now() / 1000))
 
   useEffect(() => {
-    const id = setInterval(() => setTick(t => t + 1), 1000)
+    const id = setInterval(() => setNowTs(Math.floor(Date.now() / 1000)), 1000)
     return () => clearInterval(id)
   }, [])
-  void tick
 
   const { data: nextVaultId, refetch: refetchCount } = useReadContract({
     address: TRUSTDROP_ADDRESS,
@@ -309,7 +309,7 @@ export default function App() {
           ].map(s => (
             <div key={s.n} style={{ background: s.color, border: `1px solid ${s.border}`, borderRadius: 20, padding: '2rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.4rem' }}>
-                <span className="mono" style={{ fontSize: '0.65rem', color: 'var(--subtle)', letterSpacing: '0.12em' }}>{s.n}</span>
+                <span className="step-ring mono" style={{ fontSize: '0.65rem', color: 'var(--accent)', letterSpacing: '0.12em', borderRadius: '50%', padding: '2px 6px', background: 'rgba(132,184,232,0.08)' }}>{s.n}</span>
                 <s.icon size={20} style={{ color: 'var(--accent)', opacity: 0.6 }} />
               </div>
               <h3 className="display" style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.75rem', letterSpacing: '-0.02em', color: 'var(--ink)' }}>{s.title}</h3>
@@ -396,7 +396,7 @@ export default function App() {
       ══════════════════════════════ */}
       <Section id="app" style={{ padding: '6rem 1.5rem 8rem' }}>
         <p style={{ fontSize: '0.68rem', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.8rem', fontWeight: 600 }}>Vaults</p>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: '2.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: '2rem' }}>
           <h2 className="display" style={{ fontSize: 'clamp(1.8rem,3.5vw,2.6rem)', fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--ink)' }}>
             {showCreate ? 'Create a vault' : `All vaults (${vaultCount})`}
           </h2>
@@ -418,6 +418,33 @@ export default function App() {
             </button>
           )}
         </div>
+
+        {/* All / Mine filter tabs */}
+        {!showCreate && vaultCount > 0 && (
+          <div style={{ display: 'flex', gap: 6, marginBottom: '2rem', padding: 4, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, width: 'fit-content' }}>
+            {(['all', 'mine'] as const).map(f => (
+              <button
+                key={f}
+                onClick={() => setVaultFilter(f)}
+                style={{
+                  padding: '7px 20px',
+                  borderRadius: 10,
+                  border: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.82rem',
+                  fontFamily: 'inherit',
+                  cursor: 'pointer',
+                  transition: 'all 0.18s',
+                  background: vaultFilter === f ? 'var(--surface-strong)' : 'transparent',
+                  color: vaultFilter === f ? 'var(--ink)' : 'var(--subtle)',
+                  boxShadow: vaultFilter === f ? '0 1px 6px rgba(0,0,0,0.3)' : 'none',
+                }}
+              >
+                {f === 'all' ? `All (${vaultCount})` : `Mine${isConnected ? '' : ''}`}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Create form */}
         {showCreate && isConnected && (
@@ -460,7 +487,14 @@ export default function App() {
         {/* Vault grid */}
         {isConnected && !showCreate && vaultCount > 0 && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 18 }}>
-            {vaultIds.map(id => <VaultCard key={id.toString()} vaultId={id} />)}
+            {vaultIds.map(id => (
+              <VaultCard
+                key={id.toString()}
+                vaultId={id}
+                filterOwner={vaultFilter === 'mine' ? address : undefined}
+                nowTs={nowTs}
+              />
+            ))}
           </div>
         )}
       </Section>
