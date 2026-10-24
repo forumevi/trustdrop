@@ -308,6 +308,13 @@ export function VaultCard({ vaultId }: VaultCardProps) {
         </div>
       )}
 
+      {/* Owner badge (active) */}
+      {isOwner && !settled && !lapsed && (
+        <p className="text-xs flex items-center gap-1.5" style={{ color: 'var(--success)', opacity: 0.7 }}>
+          <ShieldCheck size={11} /> You own this vault
+        </p>
+      )}
+
       {/* Owner badge (settled) */}
       {isOwner && settled && (
         <p className="text-xs flex items-center gap-1.5" style={{ color: 'var(--subtle)' }}>

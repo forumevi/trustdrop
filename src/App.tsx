@@ -265,8 +265,8 @@ export default function App() {
         {/* Stats strip */}
         <div className="fade-up delay-4" style={{ display: 'flex', gap: 48, flexWrap: 'wrap', paddingTop: '2rem', borderTop: '1px solid var(--border)' }}>
           {[
-            { label: 'Contract',      value: <span className="mono" style={{ fontSize: '0.88rem' }}>0x1152…8751</span> },
-            { label: 'Foundry tests', value: <><Counter to={67} />+</> },
+            { label: 'Contract',      value: <span className="mono" style={{ fontSize: '0.88rem' }}>0x9A0f…5d31</span> },
+            { label: 'Foundry tests', value: <><Counter to={92} />+</> },
             { label: 'Gas / check-in', value: <><span style={{ fontSize: '1rem' }}>~</span><Counter to={85} suffix="k" /></> },
             { label: 'Chain',         value: <span style={{ color: 'var(--success)' }}>5042</span> },
             { label: 'USDC gas',      value: <span style={{ color: 'var(--accent)' }}>native</span> },
@@ -299,7 +299,7 @@ export default function App() {
             {
               n: '02', icon: Clock, color: 'rgba(74,222,128,0.08)', border: 'rgba(74,222,128,0.18)',
               title: 'Prove you are alive',
-              body: "Each interval, sign a message with your offline SLH-DSA key card. Arc's own post-quantum precompile verifies it inside the transaction. No oracle, no signer.",
+              body: "Each interval, prove you are alive. Use your EVM wallet for a quick check-in, or sign with your offline SLH-DSA key for post-quantum grade proof. Arc's precompile verifies it inside the transaction.",
             },
             {
               n: '03', icon: Users, color: 'rgba(248,200,80,0.07)', border: 'rgba(248,200,80,0.16)',
