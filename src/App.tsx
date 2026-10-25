@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { ConnectKitButton } from 'connectkit'
-import { useAccount, useReadContract } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { ExternalLink, Shield, Clock, Users, Github, ArrowRight, AlertTriangle } from 'lucide-react'
 import { VaultCard } from './components/VaultCard'
 import { CreateVaultForm } from './components/CreateVaultForm'
-import { TRUSTDROP_ABI, TRUSTDROP_ADDRESS } from './lib/trustdrop'
+import { TRUSTDROP_ADDRESS } from './lib/trustdrop'
 
 /* ─────────────────────────────────────────
    Typing headline
@@ -120,19 +120,41 @@ export default function App() {
     return () => clearInterval(id)
   }, [])
 
-  const { data: nextVaultId, refetch: refetchCount } = useReadContract({
-    address: TRUSTDROP_ADDRESS,
-    abi: TRUSTDROP_ABI,
-    functionName: 'nextVaultId',
-    query: { refetchInterval: 15_000 },
-  })
+  const [vaultCount, setVaultCount] = useState(0)
+
+  const fetchVaultCount = useCallback(async () => {
+    try {
+      const res = await fetch('https://rpc.mainnet.arc.io', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0', id: 1, method: 'eth_call',
+          params: [{ to: TRUSTDROP_ADDRESS, data: '0x12ac1763' }, 'latest'],
+        }),
+      })
+      const json = await res.json() as { result?: string }
+      const result = json.result ?? ''
+      if (result && result !== '0x') {
+        const parsed = parseInt(result, 16)
+        if (!isNaN(parsed) && parsed > 0) setVaultCount(parsed - 1)
+      }
+    } catch { /* ignore */ }
+  }, [])
+
+  const refetchCount = fetchVaultCount
+
+  // eslint-disable-next-line react/set-state-in-effect
+  useEffect(() => {
+    void fetchVaultCount()
+    const timer = setInterval(() => { void fetchVaultCount() }, 15_000)
+    return () => clearInterval(timer)
+  }, [fetchVaultCount])
 
   const scrollToApp = useCallback(() => {
     document.getElementById('app')?.scrollIntoView({ behavior: 'smooth' })
   }, [])
 
-  const vaultCount = nextVaultId ? Number(nextVaultId) - 1 : 0
-  const vaultIds   = Array.from({ length: vaultCount }, (_, i) => BigInt(i + 1))
+  const vaultIds = Array.from({ length: vaultCount }, (_, i) => BigInt(i + 1))
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100dvh', position: 'relative' }}>
