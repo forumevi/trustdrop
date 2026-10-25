@@ -176,7 +176,7 @@ export const TRUSTDROP_ABI = [
 ] as const;
 
 // Filled after deploy
-export const TRUSTDROP_ADDRESS = (import.meta.env.VITE_TRUSTDROP_ADDRESS || '0xaA3ba9C55a5260cBf24bC15735aB9a03C573d7e7') as `0x${string}`;
+export const TRUSTDROP_ADDRESS = '0xaA3ba9C55a5260cBf24bC15735aB9a03C573d7e7' as `0x${string}`;
 
 export const USDC_ADDRESS = '0x3600000000000000000000000000000000000000' as const;
 

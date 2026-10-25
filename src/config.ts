@@ -19,8 +19,8 @@ export const config = createConfig({
     injected(),
   ],
   transports: {
-    [arc.id]: http('https://rpc.mainnet.arc.io'),
-    [mainnet.id]: http(), // ENS resolution uses mainnet
+    [arc.id]: http('https://rpc.mainnet.arc.io', { batch: true }),
+    [mainnet.id]: http(),
   },
 
 })

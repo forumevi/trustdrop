@@ -453,17 +453,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Not connected */}
-        {!isConnected && (
-          <div style={{ textAlign: 'center', padding: '4rem 0', borderRadius: 20, background: 'var(--surface)', border: '1px solid var(--border)' }}>
-            <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(132,184,232,0.08)', border: '1px solid rgba(132,184,232,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.2rem' }}>
-              <Shield size={26} style={{ color: 'var(--accent)', opacity: 0.5 }} />
-            </div>
-            <p style={{ color: 'var(--muted)', fontSize: '0.95rem', marginBottom: '0.5rem' }}>Connect your wallet to create or view vaults.</p>
-            <p style={{ color: 'var(--subtle)', fontSize: '0.78rem' }}>Use the button in the top right corner.</p>
-          </div>
-        )}
-
         {/* Empty state */}
         {!showCreate && vaultCount === 0 && (
           <div style={{ textAlign: 'center', padding: '4rem 0', borderRadius: 20, background: 'var(--surface)', border: '1px solid var(--border)' }}>
