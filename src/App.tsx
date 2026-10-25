@@ -124,6 +124,7 @@ export default function App() {
     address: TRUSTDROP_ADDRESS,
     abi: TRUSTDROP_ABI,
     functionName: 'nextVaultId',
+    query: { refetchInterval: 15_000 },
   })
 
   const scrollToApp = useCallback(() => {
