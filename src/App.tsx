@@ -465,7 +465,7 @@ export default function App() {
         )}
 
         {/* Empty state */}
-        {isConnected && !showCreate && vaultCount === 0 && (
+        {!showCreate && vaultCount === 0 && (
           <div style={{ textAlign: 'center', padding: '4rem 0', borderRadius: 20, background: 'var(--surface)', border: '1px solid var(--border)' }}>
             <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(132,184,232,0.08)', border: '1px solid rgba(132,184,232,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.2rem' }}>
               <Shield size={26} style={{ color: 'var(--accent)', opacity: 0.4 }} />
@@ -485,7 +485,7 @@ export default function App() {
         )}
 
         {/* Vault grid */}
-        {isConnected && !showCreate && vaultCount > 0 && (
+        {!showCreate && vaultCount > 0 && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 18 }}>
             {vaultIds.map(id => (
               <VaultCard
