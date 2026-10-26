@@ -416,3 +416,7 @@
 {"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792999421100}
 {"level":"debug","message":"[vite] connected.","timestamp":1792999441731}
 {"level":"debug","message":"Provider initialization - wallet not connected","timestamp":1792999441974}
+{"level":"debug","message":"Provider initialization - wallet not connected","timestamp":1792999471084}
+{"level":"debug","message":"[vite] connected.","timestamp":1792999471236}
+{"level":"debug","message":"[vite] hot updated: /src/components/VaultCard.tsx","timestamp":1792999529730}
+{"level":"debug","message":"[vite] hot updated: /src/index.css","timestamp":1792999529730}

@@ -270,14 +270,28 @@ export function VaultCard({ vaultId, filterOwner, nowTs }: VaultCardProps) {
 
       {isOwner && !settled && !lapsed && (
         <div className="space-y-2">
-          <button onClick={() => { void handleCheckIn(); }} disabled={checkInPending}
-            className="w-full py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-            style={{ background: 'rgba(132,184,232,0.10)', border: '1px solid rgba(132,184,232,0.25)', color: 'var(--accent)' }}
-            onMouseEnter={(e) => { if (!checkInPending) e.currentTarget.style.background = 'rgba(132,184,232,0.18)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(132,184,232,0.10)'; }}>
-            <RefreshCw size={14} className={checkInPending ? 'animate-spin' : ''} />
-            {checkInPending ? 'Sign in wallet...' : 'Check in with wallet'}
-          </button>
+          {(() => {
+            const sevenDays = 7 * 24 * 3600;
+            const timeLeft = nextDeadlineNum - nowTs;
+            const checkInOpen = timeLeft <= sevenDays;
+            const daysUntilOpen = checkInOpen ? 0 : Math.ceil((timeLeft - sevenDays) / 86400);
+            return checkInOpen ? (
+              <button onClick={() => { void handleCheckIn(); }} disabled={checkInPending}
+                className="w-full py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                style={{ background: 'rgba(132,184,232,0.10)', border: '1px solid rgba(132,184,232,0.25)', color: 'var(--accent)' }}
+                onMouseEnter={(e) => { if (!checkInPending) e.currentTarget.style.background = 'rgba(132,184,232,0.18)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(132,184,232,0.10)'; }}>
+                <RefreshCw size={14} className={checkInPending ? 'animate-spin' : ''} />
+                {checkInPending ? 'Sign in wallet...' : 'Check in with wallet'}
+              </button>
+            ) : (
+              <div className="w-full py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', color: 'var(--subtle)' }}>
+                <RefreshCw size={14} />
+                Next check-in window opens in {daysUntilOpen} day{daysUntilOpen !== 1 ? 's' : ''}
+              </div>
+            );
+          })()}
           <button onClick={() => { void handleWithdrawECDSA(); }} disabled={withdrawPending}
             className="w-full py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.20)', color: 'var(--danger)' }}
