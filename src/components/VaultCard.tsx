@@ -1,5 +1,5 @@
 import { useWriteContract, useWaitForTransactionReceipt, useAccount, useSignMessage, useChainId } from 'wagmi';
-import { formatUnits, encodeAbiParameters, keccak256, toBytes, encodeFunctionData } from 'viem';
+import { formatUnits, encodeAbiParameters, keccak256, toBytes } from 'viem';
 import { ShieldCheck, ShieldOff, Clock, LogIn, ArrowDownCircle, RefreshCw, ArrowUpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState, useEffect, useCallback } from 'react';
@@ -41,12 +41,15 @@ export function VaultCard({ vaultId, filterOwner, nowTs }: VaultCardProps) {
 
   const fetchVaultData = useCallback(async () => {
     try {
-      const statusData = encodeFunctionData({ abi: TRUSTDROP_ABI, functionName: 'vaultStatus', args: [vaultId] });
-      const benData = encodeFunctionData({ abi: TRUSTDROP_ABI, functionName: 'getBeneficiaries', args: [vaultId] });
+      // vaultStatus(uint256) selector = 0x00902621
+      // getBeneficiaries(uint256) selector = 0x783804d9
+      const idHex = vaultId.toString(16).padStart(64, '0');
+      const statusData = `0x00902621${idHex}` as `0x${string}`;
+      const benData = `0x783804d9${idHex}` as `0x${string}`;
 
       const [statusHex, benHex] = await Promise.all([ethCall(statusData), ethCall(benData)]);
 
-      if (statusHex && statusHex !== '0x') {
+      if (statusHex && statusHex.length > 2) {
         const { decodeAbiParameters } = await import('viem');
         const decoded = decodeAbiParameters(
           [
@@ -62,7 +65,7 @@ export function VaultCard({ vaultId, filterOwner, nowTs }: VaultCardProps) {
         setStatus([decoded[0], decoded[1], decoded[2], decoded[3], decoded[4], decoded[5]]);
       }
 
-      if (benHex && benHex !== '0x') {
+      if (benHex && benHex.length > 2) {
         const { decodeAbiParameters } = await import('viem');
         const decoded = decodeAbiParameters(
           [
@@ -73,7 +76,7 @@ export function VaultCard({ vaultId, filterOwner, nowTs }: VaultCardProps) {
         );
         setBeneficiaryData([decoded[0] as string[], decoded[1] as bigint[]]);
       }
-    } catch { /* ignore */ }
+    } catch (e) { console.error('fetchVaultData error:', e); }
   }, [vaultId]);
 
   useEffect(() => {
